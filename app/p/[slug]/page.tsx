@@ -14,6 +14,9 @@ import Footer from "@/components/Footer";
 import { getActiveProducts, getProductBySlug } from "@/lib/products";
 import { formatPrice } from "@/lib/format";
 
+// Los cambios de producto en Supabase se reflejan en hasta 60 s.
+export const revalidate = 60;
+
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {

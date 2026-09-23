@@ -5,6 +5,8 @@ import Footer from "@/components/Footer";
 import { getActiveProducts } from "@/lib/products";
 import { discountPercent, formatPrice } from "@/lib/format";
 
+export const revalidate = 60;
+
 export default async function HomePage() {
   const products = await getActiveProducts();
 

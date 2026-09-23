@@ -30,14 +30,14 @@ export async function submitOrder(_prev: OrderFormState, formData: FormData): Pr
     return { values: raw, message: "Este producto ya no está disponible." };
   }
 
-  let orderId: string;
+  let orderCode: string;
   try {
     const order = await createOrder(product, result.data);
-    orderId = order.id;
+    orderCode = order.code;
   } catch (err) {
     console.error("[pedido] error al guardar", err);
     return { values: raw, message: "No pudimos registrar tu pedido. Probá de nuevo en un minuto." };
   }
 
-  redirect(`/gracias?p=${encodeURIComponent(product.slug)}&o=${encodeURIComponent(orderId)}`);
+  redirect(`/gracias?p=${encodeURIComponent(product.slug)}&o=${encodeURIComponent(orderCode)}`);
 }

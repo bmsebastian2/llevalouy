@@ -1,22 +1,22 @@
+import "server-only";
 import type { Order, OrderInput } from "@/types/order";
 import type { Product } from "@/types/product";
+import { getSupabase } from "@/lib/supabase";
 
 // Única puerta de escritura de pedidos.
-// Por ahora guarda en memoria y lo loguea en la terminal: SE PIERDE al reiniciar.
-// En el paso 5.3 pasa a Supabase sin tocar el formulario.
+// Guarda en Supabase. Sin credenciales, SOLO en desarrollo, guarda en memoria y lo loguea.
+// En producción sin Supabase falla a propósito: nunca le decimos "recibido" a un cliente sin guardar el pedido.
 
-const memoryOrders: Order[] = [];
-
-function newOrderId(): string {
+function newOrderCode(): string {
   const time = Date.now().toString(36).toUpperCase().slice(-5);
   const rand = Math.random().toString(36).slice(2, 5).toUpperCase();
   return `LL-${time}${rand}`;
 }
 
-export async function createOrder(product: Product, input: OrderInput): Promise<Order> {
-  const order: Order = {
+function buildOrder(product: Product, input: OrderInput): Omit<Order, "id"> {
+  return {
     ...input,
-    id: newOrderId(),
+    code: newOrderCode(),
     productId: product.id,
     productSlug: product.slug,
     productName: product.name,
@@ -25,8 +25,48 @@ export async function createOrder(product: Product, input: OrderInput): Promise<
     status: "pending",
     createdAt: new Date().toISOString(),
   };
+}
 
-  memoryOrders.push(order);
-  console.info("[pedido nuevo]", JSON.stringify(order));
-  return order;
+export async function createOrder(product: Product, input: OrderInput): Promise<Order> {
+  const db = getSupabase();
+
+  if (!db) {
+    if (process.env.NODE_ENV !== "development") {
+      throw new Error("[pedidos] Supabase no está configurado: no se puede guardar el pedido.");
+    }
+    const order: Order = { id: crypto.randomUUID(), ...buildOrder(product, input) };
+    console.info("[pedido nuevo · SOLO MEMORIA]", JSON.stringify(order));
+    return order;
+  }
+
+  // Reintenta si el código generado ya existe (colisión muy improbable).
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const draft = buildOrder(product, input);
+    const { data, error } = await db
+      .from("orders")
+      .insert({
+        code: draft.code,
+        product_id: draft.productId,
+        product_slug: draft.productSlug,
+        product_name: draft.productName,
+        unit_price: draft.unitPrice,
+        quantity: draft.quantity,
+        total: draft.total,
+        name: draft.name,
+        phone: draft.phone,
+        department: draft.department,
+        city: draft.city,
+        address: draft.address,
+        notes: draft.notes ?? null,
+        status: draft.status,
+      })
+      .select("id, created_at")
+      .single<{ id: string; created_at: string }>();
+
+    if (!error) return { ...draft, id: data.id, createdAt: data.created_at };
+    if (error.code === "23505" && error.message.includes("code")) continue;
+    throw new Error(`[pedidos] createOrder: ${error.message}`);
+  }
+
+  throw new Error("[pedidos] createOrder: no se pudo generar un código de pedido único.");
 }

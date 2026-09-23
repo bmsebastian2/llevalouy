@@ -42,6 +42,8 @@ export type OrderStatus = "pending" | "confirmed" | "shipped" | "delivered" | "c
 /** Pedido guardado. Precio y total se calculan en el servidor, nunca vienen del cliente. */
 export type Order = Omit<OrderInput, "productSlug"> & {
   id: string;
+  /** Número de pedido que ve el cliente, ej: LL-BXNZ5D4X */
+  code: string;
   productId: string;
   productSlug: string;
   productName: string;
