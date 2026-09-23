@@ -9,6 +9,7 @@ import Reviews from "@/components/Reviews";
 import Faq from "@/components/Faq";
 import CtaButton from "@/components/CtaButton";
 import StickyCta from "@/components/StickyCta";
+import OrderForm from "@/components/OrderForm";
 import Footer from "@/components/Footer";
 import { getActiveProducts, getProductBySlug } from "@/lib/products";
 import { formatPrice } from "@/lib/format";
@@ -75,9 +76,8 @@ export default async function ProductPage({ params }: Props) {
         </section>
 
         <section id="pedido" className="scroll-mt-20 px-4 py-12">
-          <div className="mx-auto max-w-xl rounded-3xl border-2 border-dashed border-aqua-dark/40 bg-white p-8 text-center">
-            <h2 className="text-2xl font-extrabold">Hacé tu pedido</h2>
-            <p className="mt-2 text-ink/60">Formulario — paso 5.2</p>
+          <div className="mx-auto max-w-xl">
+            <OrderForm slug={product.slug} name={product.name} price={product.price} image={product.images[0]} />
           </div>
         </section>
       </main>
