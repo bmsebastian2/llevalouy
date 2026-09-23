@@ -62,7 +62,7 @@ export default async function ProductPage({ params }: Props) {
       <main className="pb-24 md:pb-0">
         <ProductHero product={product} />
         <TrustBar />
-        <Benefits benefits={product.benefits} description={product.description} />
+        <Benefits benefits={product.benefits} description={product.description} media={product.usageMedia} />
         <HowToBuy />
         <Reviews reviews={product.reviews} />
         <Faq faqs={product.faqs} />

@@ -17,6 +17,15 @@ export type ProductReview = {
   text: string;
 };
 
+export type ProductUsageMedia = {
+  src: string;
+  /** Para animaciones usar MP4 (mucho más liviano que GIF) */
+  type: "image" | "video";
+  caption: string;
+  /** Cuadro que se muestra antes de reproducir el video */
+  poster?: string;
+};
+
 export type Product = {
   id: string;
   slug: string;
@@ -32,5 +41,7 @@ export type Product = {
   description: string;
   faqs: ProductFaq[];
   reviews: ProductReview[];
+  /** Fotos o videos del producto en uso, intercalados entre los beneficios */
+  usageMedia?: ProductUsageMedia[];
   active: boolean;
 };

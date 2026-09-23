@@ -24,6 +24,19 @@ export const mockProducts: Product[] = [
     ],
     description:
       "Olvidate de la manguera pesada que se enrosca. Abrís la canilla y se estira sola hasta 30 metros; la cerrás y vuelve a su tamaño compacto. Viene con pistola de 7 chorros y adaptadores para cualquier canilla.",
+    usageMedia: [
+      {
+        src: "/products/manguera-uso.mp4",
+        type: "video",
+        poster: "/products/manguera-2.jpg",
+        caption: "Abrís la canilla y se estira sola.",
+      },
+      {
+        src: "/products/manguera-3.jpg",
+        type: "image",
+        caption: "Cerrás el agua y entra en un cajón.",
+      },
+    ],
     faqs: [
       {
         q: "¿Cómo pago?",
