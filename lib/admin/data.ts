@@ -17,14 +17,19 @@ function db() {
 
 // ───────────── Pedidos ─────────────
 
-type OrderRow = {
-  id: string;
-  code: string;
+type OrderItemRow = {
+  line: number;
   product_id: string;
   product_slug: string;
   product_name: string;
   unit_price: number;
   quantity: number;
+  subtotal: number;
+};
+
+type OrderRow = {
+  id: string;
+  code: string;
   total: number;
   name: string;
   phone: string;
@@ -35,17 +40,27 @@ type OrderRow = {
   notes: string | null;
   status: OrderStatus;
   created_at: string;
+  order_items: OrderItemRow[];
 };
+
+const ORDER_COLUMNS =
+  "id, code, total, name, phone, department, city, address, payment_method, notes, status, created_at, " +
+  "order_items(line, product_id, product_slug, product_name, unit_price, quantity, subtotal)";
 
 function toOrder(r: OrderRow): Order {
   return {
     id: r.id,
     code: r.code,
-    productId: r.product_id,
-    productSlug: r.product_slug,
-    productName: r.product_name,
-    unitPrice: r.unit_price,
-    quantity: r.quantity,
+    items: [...(r.order_items ?? [])]
+      .sort((a, b) => a.line - b.line)
+      .map((it) => ({
+        productId: it.product_id,
+        productSlug: it.product_slug,
+        productName: it.product_name,
+        unitPrice: it.unit_price,
+        quantity: it.quantity,
+        subtotal: it.subtotal,
+      })),
     total: r.total,
     name: r.name,
     phone: r.phone,
@@ -60,7 +75,7 @@ function toOrder(r: OrderRow): Order {
 }
 
 export async function listOrders(status?: OrderStatus, limit = 200): Promise<Order[]> {
-  let q = db().from("orders").select("*").order("created_at", { ascending: false }).limit(limit);
+  let q = db().from("orders").select(ORDER_COLUMNS).order("created_at", { ascending: false }).limit(limit);
   if (status) q = q.eq("status", status);
   const { data, error } = await q.returns<OrderRow[]>();
   if (error) throw new Error(`listOrders: ${error.message}`);
@@ -76,7 +91,7 @@ export async function countOrdersByStatus(): Promise<Record<OrderStatus, number>
 }
 
 export async function getOrder(id: string): Promise<Order | null> {
-  const { data, error } = await db().from("orders").select("*").eq("id", id).maybeSingle<OrderRow>();
+  const { data, error } = await db().from("orders").select(ORDER_COLUMNS).eq("id", id).maybeSingle<OrderRow>();
   if (error) throw new Error(`getOrder: ${error.message}`);
   return data ? toOrder(data) : null;
 }

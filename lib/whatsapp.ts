@@ -14,11 +14,20 @@ export function formatUyPhone(e164: string): string {
   return local.replace(/^(\d{3})(\d{3})(\d{3})$/, "$1 $2 $3");
 }
 
+/** Una línea por producto; con varios, cada una lleva su subtotal. */
+function itemLines(order: Order): string[] {
+  if (order.items.length === 1) {
+    const it = order.items[0];
+    return [`🛒 *${it.productName}* x${it.quantity}`];
+  }
+  return order.items.map((it) => `🛒 *${it.productName}* x${it.quantity} · ${formatPrice(it.subtotal)}`);
+}
+
 export function buildOrderMessage(order: Order): string {
   const lines = [
     "¡Hola Llevalo UY! 👋 Quiero hacer este pedido:",
     "",
-    `🛒 *${order.productName}* x${order.quantity}`,
+    ...itemLines(order),
     `💵 Total: *${formatPrice(order.total)}*`,
     `💳 Pago: ${PAYMENT_METHOD_LABEL[order.paymentMethod]}`,
     "",
@@ -35,7 +44,7 @@ export function buildOrderMessage(order: Order): string {
 export function buildCustomerMessage(order: Order): string {
   const firstName = order.name.split(" ")[0];
   const summary = [
-    `🛒 *${order.productName}* x${order.quantity}`,
+    ...itemLines(order),
     `💵 Total: *${formatPrice(order.total)}* · ${PAYMENT_METHOD_LABEL[order.paymentMethod]}`,
     `📍 ${order.address}, ${order.city}, ${order.department}`,
   ];
@@ -50,7 +59,9 @@ export function buildCustomerMessage(order: Order): string {
         order.paymentMethod === "cash" ? "Tené el efectivo a mano. ¡Gracias por tu compra!" : "¡Gracias por tu compra!",
       ].join("\n");
     case "delivered":
-      return `¡Hola ${firstName}! 😊 Esperamos que disfrutes tu ${order.productName}. Si tenés un minuto, contanos qué te pareció. ¡Gracias por comprar en Llevalo UY!`;
+      return `¡Hola ${firstName}! 😊 Esperamos que disfrutes ${
+        order.items.length === 1 ? `tu ${order.items[0].productName}` : "tu compra"
+      }. Si tenés un minuto, contanos qué te pareció. ¡Gracias por comprar en Llevalo UY!`;
     default:
       return [
         `¡Hola ${firstName}! 👋 Te escribimos de Llevalo UY por tu pedido N° ${order.code}:`,

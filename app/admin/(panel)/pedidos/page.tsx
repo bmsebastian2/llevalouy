@@ -81,9 +81,21 @@ function OrderCard({ order: o }: { order: Order }) {
         <OrderStatusSelect id={o.id} status={o.status} />
       </div>
 
-      <p className="mt-3 font-bold">
-        {o.productName} <span className="font-normal text-ink/60">x{o.quantity}</span>
-        <span className="float-right text-aqua-dark">{formatPrice(o.total)}</span>
+      <ul className="mt-3 space-y-0.5">
+        {o.items.map((it) => (
+          <li key={it.productId} className="flex items-baseline justify-between gap-3 font-bold">
+            <span className="min-w-0">
+              {it.productName} <span className="font-normal text-ink/60">x{it.quantity}</span>
+            </span>
+            {o.items.length > 1 && (
+              <span className="shrink-0 text-sm font-normal tabular-nums text-ink/60">{formatPrice(it.subtotal)}</span>
+            )}
+          </li>
+        ))}
+      </ul>
+      <p className="mt-1 flex items-baseline justify-between gap-3 font-bold">
+        <span className="text-sm text-ink/60">{o.items.length > 1 ? `Total · ${o.items.length} productos` : "Total"}</span>
+        <span className="tabular-nums text-aqua-dark">{formatPrice(o.total)}</span>
       </p>
 
       <dl className="mt-2 space-y-1 text-sm text-ink/80">

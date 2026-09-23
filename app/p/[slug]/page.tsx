@@ -8,10 +8,11 @@ import HowToBuy from "@/components/HowToBuy";
 import Reviews from "@/components/Reviews";
 import Faq from "@/components/Faq";
 import StickyCta from "@/components/StickyCta";
-import OrderForm from "@/components/OrderForm";
+import OrderForm, { type OrderProduct } from "@/components/OrderForm";
 import Footer from "@/components/Footer";
 import { getActiveProducts, getProductBySlug } from "@/lib/products";
 import { formatPrice } from "@/lib/format";
+import type { Product } from "@/types/product";
 
 // Los cambios de producto en Supabase se reflejan en hasta 60 s.
 export const revalidate = 60;
@@ -52,8 +53,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const [product, catalog] = await Promise.all([getProductBySlug(slug), getActiveProducts()]);
   if (!product) notFound();
+
+  const toOrderProduct = (p: Product): OrderProduct => ({ slug: p.slug, name: p.name, price: p.price, image: p.images[0] });
+  const extras = catalog.filter((p) => p.slug !== product.slug).map(toOrderProduct);
 
   return (
     <>
@@ -81,7 +85,7 @@ export default async function ProductPage({ params }: Props) {
           </div>
           <div className="-mt-20 px-4 pb-12">
             <div className="mx-auto max-w-xl">
-              <OrderForm slug={product.slug} name={product.name} price={product.price} image={product.images[0]} />
+              <OrderForm product={toOrderProduct(product)} extras={extras} />
             </div>
           </div>
         </section>

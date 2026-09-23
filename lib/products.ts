@@ -67,6 +67,25 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   return data ? toProduct(data) : null;
 }
 
+/** Productos activos con esos slugs. Los que no existen o están pausados no vienen. */
+export async function getActiveProductsBySlugs(slugs: string[]): Promise<Product[]> {
+  const db = getSupabase();
+  if (!db) {
+    warnMock();
+    return mockProducts.filter((p) => p.active && slugs.includes(p.slug));
+  }
+
+  const { data, error } = await db
+    .from("products")
+    .select(PRODUCT_COLUMNS)
+    .in("slug", slugs)
+    .eq("active", true)
+    .returns<ProductRow[]>();
+
+  if (error) throw new Error(`[productos] getActiveProductsBySlugs: ${error.message}`);
+  return (data ?? []).map(toProduct);
+}
+
 export async function getActiveProducts(): Promise<Product[]> {
   const db = getSupabase();
   if (!db) {

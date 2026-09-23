@@ -1,5 +1,5 @@
 import "server-only";
-import type { Order, OrderInput } from "@/types/order";
+import type { Order, OrderInput, OrderItem } from "@/types/order";
 import type { Product } from "@/types/product";
 import { getSupabase } from "@/lib/supabase";
 
@@ -13,44 +13,51 @@ function newOrderCode(): string {
   return `LL-${time}${rand}`;
 }
 
-function buildOrder(product: Product, input: OrderInput): Omit<Order, "id"> {
+/** `products` tiene que traer un producto activo por cada item (lo garantiza submitOrder). */
+function buildOrder(products: Product[], input: OrderInput): Omit<Order, "id"> {
+  const items: OrderItem[] = input.items.map(({ productSlug, quantity }) => {
+    const product = products.find((p) => p.slug === productSlug);
+    if (!product) throw new Error(`[pedidos] producto no encontrado: ${productSlug}`);
+    return {
+      productId: product.id,
+      productSlug: product.slug,
+      productName: product.name,
+      unitPrice: product.price,
+      quantity,
+      subtotal: product.price * quantity,
+    };
+  });
+
+  const { items: _input, ...customer } = input;
   return {
-    ...input,
+    ...customer,
     code: newOrderCode(),
-    productId: product.id,
-    productSlug: product.slug,
-    productName: product.name,
-    unitPrice: product.price,
-    total: product.price * input.quantity,
+    items,
+    total: items.reduce((sum, it) => sum + it.subtotal, 0),
     status: "pending",
     createdAt: new Date().toISOString(),
   };
 }
 
-export async function createOrder(product: Product, input: OrderInput): Promise<Order> {
+export async function createOrder(products: Product[], input: OrderInput): Promise<Order> {
   const db = getSupabase();
 
   if (!db) {
     if (process.env.NODE_ENV !== "development") {
       throw new Error("[pedidos] Supabase no está configurado: no se puede guardar el pedido.");
     }
-    const order: Order = { id: crypto.randomUUID(), ...buildOrder(product, input) };
+    const order: Order = { id: crypto.randomUUID(), ...buildOrder(products, input) };
     console.info("[pedido nuevo · SOLO MEMORIA]", JSON.stringify(order));
     return order;
   }
 
   // Reintenta si el código generado ya existe (colisión muy improbable).
   for (let attempt = 0; attempt < 3; attempt++) {
-    const draft = buildOrder(product, input);
+    const draft = buildOrder(products, input);
     const { data, error } = await db
       .from("orders")
       .insert({
         code: draft.code,
-        product_id: draft.productId,
-        product_slug: draft.productSlug,
-        product_name: draft.productName,
-        unit_price: draft.unitPrice,
-        quantity: draft.quantity,
         total: draft.total,
         name: draft.name,
         phone: draft.phone,
@@ -64,9 +71,31 @@ export async function createOrder(product: Product, input: OrderInput): Promise<
       .select("id, created_at")
       .single<{ id: string; created_at: string }>();
 
-    if (!error) return { ...draft, id: data.id, createdAt: data.created_at };
-    if (error.code === "23505" && error.message.includes("code")) continue;
-    throw new Error(`[pedidos] createOrder: ${error.message}`);
+    if (error) {
+      if (error.code === "23505" && error.message.includes("code")) continue;
+      throw new Error(`[pedidos] createOrder: ${error.message}`);
+    }
+
+    const { error: itemsError } = await db.from("order_items").insert(
+      draft.items.map((it, line) => ({
+        order_id: data.id,
+        line,
+        product_id: it.productId,
+        product_slug: it.productSlug,
+        product_name: it.productName,
+        unit_price: it.unitPrice,
+        quantity: it.quantity,
+        subtotal: it.subtotal,
+      })),
+    );
+
+    if (itemsError) {
+      // Sin sus productos el pedido no sirve: lo borramos para no dejar uno vacío en el panel.
+      await db.from("orders").delete().eq("id", data.id);
+      throw new Error(`[pedidos] createOrder items: ${itemsError.message}`);
+    }
+
+    return { ...draft, id: data.id, createdAt: data.created_at };
   }
 
   throw new Error("[pedidos] createOrder: no se pudo generar un código de pedido único.");

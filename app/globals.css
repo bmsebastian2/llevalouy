@@ -64,7 +64,22 @@ body {
   right: -9px;
 }
 
+/* Producto recién sumado al pedido */
+@keyframes item-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+.item-in {
+  animation: item-in 0.25s ease-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .item-in {
+    animation: none;
+  }
+
   html {
     scroll-behavior: auto;
   }

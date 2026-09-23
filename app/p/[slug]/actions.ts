@@ -1,6 +1,6 @@
 "use server";
 
-import { getProductBySlug } from "@/lib/products";
+import { getActiveProductsBySlugs } from "@/lib/products";
 import { createOrder } from "@/lib/orders";
 import { validateOrder, type OrderErrors, type OrderRaw } from "@/lib/order-validation";
 import type { PaymentMethod } from "@/types/order";
@@ -14,7 +14,7 @@ export type OrderFormState = {
   success?: { code: string; whatsappUrl: string; paymentMethod: PaymentMethod };
 };
 
-const FIELDS = ["productSlug", "quantity", "name", "phone", "department", "city", "address", "paymentMethod", "notes"] as const;
+const FIELDS = ["items", "name", "phone", "department", "city", "address", "paymentMethod", "notes"] as const;
 
 export async function submitOrder(_prev: OrderFormState, formData: FormData): Promise<OrderFormState> {
   const store = getStoreWhatsapp();
@@ -36,13 +36,19 @@ export async function submitOrder(_prev: OrderFormState, formData: FormData): Pr
     return { errors: result.errors, values: raw, message: "Revisá los datos marcados en rojo." };
   }
 
-  const product = await getProductBySlug(result.data.productSlug);
-  if (!product) {
-    return { values: raw, message: "Este producto ya no está disponible." };
+  const products = await getActiveProductsBySlugs(result.data.items.map((it) => it.productSlug));
+  if (products.length !== result.data.items.length) {
+    const plural = result.data.items.length > 1;
+    return {
+      values: raw,
+      message: plural
+        ? "Uno de los productos ya no está disponible. Recargá la página y armá el pedido de nuevo."
+        : "Este producto ya no está disponible.",
+    };
   }
 
   try {
-    const order = await createOrder(product, result.data);
+    const order = await createOrder(products, result.data);
     return {
       success: {
         code: order.code,

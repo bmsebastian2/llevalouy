@@ -1,17 +1,20 @@
 import {
   DEPARTMENTS,
+  MAX_ITEMS,
   MAX_QUANTITY,
   PAYMENT_METHODS,
   type Department,
   type OrderInput,
+  type OrderItemInput,
   type PaymentMethod,
 } from "@/types/order";
 
 // Validación compartida: la usa el servidor (fuente de verdad) y puede usarla el cliente.
 
-export type OrderField = "name" | "phone" | "department" | "city" | "address" | "paymentMethod" | "quantity" | "notes";
+export type OrderField = "name" | "phone" | "department" | "city" | "address" | "paymentMethod" | "items" | "notes";
 export type OrderErrors = Partial<Record<OrderField, string>>;
-export type OrderRaw = Partial<Record<OrderField | "productSlug", string>>;
+/** `items` llega como JSON: [{ productSlug, quantity }] */
+export type OrderRaw = Partial<Record<OrderField, string>>;
 
 export type ValidationResult = { ok: true; data: OrderInput } | { ok: false; errors: OrderErrors };
 
@@ -25,6 +28,25 @@ export function normalizeUyMobile(value: string): string | null {
 
 function clean(value: string | undefined): string {
   return (value ?? "").trim().replace(/\s+/g, " ");
+}
+
+/** Lee el JSON de productos. Devuelve null si no tiene la forma esperada. */
+export function parseItems(value: string | undefined): OrderItemInput[] | null {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value ?? "");
+  } catch {
+    return null;
+  }
+  if (!Array.isArray(parsed)) return null;
+  const items: OrderItemInput[] = [];
+  for (const it of parsed) {
+    if (typeof it !== "object" || it === null) return null;
+    const { productSlug, quantity } = it as Record<string, unknown>;
+    if (typeof productSlug !== "string" || typeof quantity !== "number") return null;
+    items.push({ productSlug: clean(productSlug), quantity });
+  }
+  return items;
 }
 
 export function validateOrder(raw: OrderRaw): ValidationResult {
@@ -51,23 +73,23 @@ export function validateOrder(raw: OrderRaw): ValidationResult {
   const paymentMethod = clean(raw.paymentMethod);
   if (!PAYMENT_METHODS.includes(paymentMethod as PaymentMethod)) errors.paymentMethod = "Elegí cómo vas a pagar.";
 
-  const quantity = Number(raw.quantity ?? "1");
-  if (!Number.isInteger(quantity) || quantity < 1 || quantity > MAX_QUANTITY) {
-    errors.quantity = `Podés pedir de 1 a ${MAX_QUANTITY} unidades.`;
+  const items = parseItems(raw.items) ?? [];
+  const slugs = new Set(items.map((it) => it.productSlug));
+  if (items.length === 0 || items.length > MAX_ITEMS || slugs.size !== items.length || slugs.has("")) {
+    errors.items = "Revisá los productos de tu pedido.";
+  } else if (items.some((it) => !Number.isInteger(it.quantity) || it.quantity < 1 || it.quantity > MAX_QUANTITY)) {
+    errors.items = `Podés pedir de 1 a ${MAX_QUANTITY} unidades de cada producto.`;
   }
 
   const notes = clean(raw.notes);
   if (notes.length > 300) errors.notes = "Máximo 300 caracteres.";
-
-  const productSlug = clean(raw.productSlug);
 
   if (Object.keys(errors).length > 0 || !phone) return { ok: false, errors };
 
   return {
     ok: true,
     data: {
-      productSlug,
-      quantity,
+      items,
       name,
       phone,
       department: department as Department,

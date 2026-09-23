@@ -7,14 +7,23 @@ import { formatPrice } from "@/lib/format";
 import { SHIMMER } from "@/lib/shimmer";
 import OrderSuccess from "./OrderSuccess";
 import { DEPARTMENTS, MAX_QUANTITY, PAYMENT_METHODS, PAYMENT_METHOD_LABEL, type PaymentMethod } from "@/types/order";
-import type { OrderField } from "@/lib/order-validation";
+import { parseItems, type OrderField } from "@/lib/order-validation";
 
-type Props = {
+export type OrderProduct = {
   slug: string;
   name: string;
   price: number;
   image?: string;
 };
+
+type Props = {
+  /** El producto de la página: siempre va en el pedido */
+  product: OrderProduct;
+  /** Otros productos que se pueden sumar al mismo envío */
+  extras: OrderProduct[];
+};
+
+type Line = { product: OrderProduct; quantity: number };
 
 const initialState: OrderFormState = {};
 
@@ -40,11 +49,22 @@ const inputClass =
 
 const labelClass = "text-sm font-bold";
 
-export default function OrderForm({ slug, name, price, image }: Props) {
+export default function OrderForm({ product, extras }: Props) {
   const [state, formAction, pending] = useActionState(submitOrder, initialState);
   const v = state.values ?? {};
 
-  const [quantity, setQuantity] = useState(() => Number(state.values?.quantity) || 1);
+  // Líneas del pedido: la primera es el producto de la página y no se puede quitar.
+  // Si el servidor devolvió errores, se rearman con lo que la persona había elegido.
+  const [lines, setLines] = useState<Line[]>(() => {
+    const saved = parseItems(v.items) ?? [];
+    const mainQty = saved.find((it) => it.productSlug === product.slug)?.quantity ?? 1;
+    const added = saved.flatMap(({ productSlug, quantity }) => {
+      const p = extras.find((e) => e.slug === productSlug);
+      return p ? [{ product: p, quantity }] : [];
+    });
+    return [{ product, quantity: mainQty }, ...added];
+  });
+  const [announce, setAnnounce] = useState("");
   const [payment, setPayment] = useState<PaymentMethod>(() =>
     PAYMENT_METHODS.includes(state.values?.paymentMethod as PaymentMethod)
       ? (state.values?.paymentMethod as PaymentMethod)
@@ -72,6 +92,24 @@ export default function OrderForm({ slug, name, price, image }: Props) {
     ) : null;
   }
 
+  const total = lines.reduce((sum, l) => sum + l.product.price * l.quantity, 0);
+  const inOrder = (slug: string) => lines.some((l) => l.product.slug === slug);
+
+  function setQuantity(slug: string, quantity: number) {
+    setLines((ls) => ls.map((l) => (l.product.slug === slug ? { ...l, quantity } : l)));
+  }
+
+  function addExtra(p: OrderProduct) {
+    if (inOrder(p.slug)) return;
+    setLines((ls) => [...ls, { product: p, quantity: 1 }]);
+    setAnnounce(`${p.name} agregado a tu pedido.`);
+  }
+
+  function removeExtra(p: OrderProduct) {
+    setLines((ls) => ls.filter((l) => l.product.slug !== p.slug));
+    setAnnounce(`${p.name} quitado de tu pedido.`);
+  }
+
   function track(e: React.FormEvent<HTMLFormElement>) {
     const t = e.target as HTMLInputElement;
     if (t.name in fields) setFields((f) => ({ ...f, [t.name]: t.value }));
@@ -80,13 +118,13 @@ export default function OrderForm({ slug, name, price, image }: Props) {
   // Cada parada se completa cuando tiene lo suyo y la anterior ya está lista
   const filled = (s: string) => s.trim().length > 0;
   const ready = [
-    quantity >= 1,
+    lines.length >= 1,
     filled(fields.name) && fields.phone.replace(/\D/g, "").length >= 8,
     filled(fields.city) && filled(fields.address),
     true,
   ];
   const stepErrors = [
-    false,
+    Boolean(err("items")),
     Boolean(err("name") || err("phone")),
     Boolean(err("department") || err("city") || err("address") || err("notes")),
     Boolean(err("paymentMethod")),
@@ -124,8 +162,11 @@ export default function OrderForm({ slug, name, price, image }: Props) {
         </p>
       </header>
 
-      <input type="hidden" name="productSlug" value={slug} />
-      <input type="hidden" name="quantity" value={quantity} />
+      <input
+        type="hidden"
+        name="items"
+        value={JSON.stringify(lines.map((l) => ({ productSlug: l.product.slug, quantity: l.quantity })))}
+      />
       {/* Honeypot anti-spam: invisible para personas */}
       <div aria-hidden className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
         <label>
@@ -136,40 +177,34 @@ export default function OrderForm({ slug, name, price, image }: Props) {
 
       <ol className="mt-7 px-5 sm:px-8">
         <Step n={1} title="Tu pedido" status={status[0]}>
-          <div className="flex items-center gap-3 rounded-2xl bg-bg p-2.5 pr-3">
-            {image && (
-              <div className="relative size-14 shrink-0 overflow-hidden rounded-xl">
-                <Image src={image} alt="" fill sizes="56px" className="object-cover" placeholder={SHIMMER} />
-              </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-bold leading-tight">{name}</p>
-              <p className="text-sm text-ink/60">{formatPrice(price)} c/u</p>
+          <ul className="grid grid-cols-1 gap-2">
+            {lines.map((l, i) => (
+              <ItemRow
+                key={l.product.slug}
+                line={l}
+                removable={i > 0}
+                onQuantity={(q) => setQuantity(l.product.slug, q)}
+                onRemove={() => removeExtra(l.product)}
+              />
+            ))}
+          </ul>
+          {fieldError("items")}
+
+          {extras.length > 0 && (
+            <div className="mt-5">
+              <p className="text-sm font-bold">
+                ¿Sumás algo más? <span className="font-normal text-ink/55">Va en el mismo envío.</span>
+              </p>
+              <ul className="no-scrollbar mt-2 flex snap-x gap-2.5 overflow-x-auto pb-1" aria-label="Otros productos">
+                {extras.map((p) => (
+                  <ExtraCard key={p.slug} product={p} added={inOrder(p.slug)} onAdd={() => addExtra(p)} />
+                ))}
+              </ul>
             </div>
-            <div
-              className="flex shrink-0 items-center rounded-full bg-white p-1 ring-1 ring-ink/10"
-              role="group"
-              aria-label="Cantidad"
-            >
-              <QtyButton
-                label="Restar una unidad"
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                disabled={quantity <= 1}
-              >
-                −
-              </QtyButton>
-              <span className="w-7 text-center text-lg font-extrabold tabular-nums" aria-live="polite">
-                {quantity}
-              </span>
-              <QtyButton
-                label="Sumar una unidad"
-                onClick={() => setQuantity((q) => Math.min(MAX_QUANTITY, q + 1))}
-                disabled={quantity >= MAX_QUANTITY}
-              >
-                +
-              </QtyButton>
-            </div>
-          </div>
+          )}
+          <p className="sr-only" aria-live="polite">
+            {announce}
+          </p>
         </Step>
 
         <Step n={2} title="¿Quién lo recibe?" hint="Te escribimos a este número para coordinar." status={status[1]}>
@@ -343,7 +378,14 @@ export default function OrderForm({ slug, name, price, image }: Props) {
         <span className="ticket-edge absolute inset-x-0 top-0" aria-hidden />
 
         <dl className="grid gap-2 text-sm">
-          <ReceiptRow label={`${name} × ${quantity}`} value={formatPrice(price * quantity)} strong />
+          {lines.map((l) => (
+            <ReceiptRow
+              key={l.product.slug}
+              label={`${l.product.name} × ${l.quantity}`}
+              value={formatPrice(l.product.price * l.quantity)}
+              strong
+            />
+          ))}
           <ReceiptRow label="Lo recibe" value={filled(fields.name) ? fields.name.trim() : "—"} />
           <ReceiptRow label="Entrega en" value={destination} />
           <ReceiptRow label="Pago" value={PAYMENT_METHOD_LABEL[payment]} />
@@ -351,7 +393,7 @@ export default function OrderForm({ slug, name, price, image }: Props) {
 
         <div className="mt-4 flex items-baseline justify-between gap-4 border-t border-dashed border-white/25 pt-4">
           <span className="font-bold">{payment === "cash" ? "Total a pagar al recibir" : "Total a pagar"}</span>
-          <span className="text-3xl font-extrabold tabular-nums text-aqua">{formatPrice(price * quantity)}</span>
+          <span className="text-3xl font-extrabold tabular-nums text-aqua">{formatPrice(total)}</span>
         </div>
 
         {state.message && (
@@ -435,6 +477,87 @@ function Step({
   );
 }
 
+function ItemRow({
+  line: { product, quantity },
+  removable,
+  onQuantity,
+  onRemove,
+}: {
+  line: Line;
+  removable: boolean;
+  onQuantity: (quantity: number) => void;
+  onRemove: () => void;
+}) {
+  // En los productos sumados, restar desde 1 los quita del pedido
+  const removes = removable && quantity <= 1;
+
+  return (
+    <li className={`flex items-center gap-2.5 rounded-2xl bg-bg p-2 pr-2.5 sm:gap-3 sm:p-2.5 sm:pr-3 ${removable ? "item-in" : ""}`}>
+      {product.image && (
+        <div className="relative size-12 shrink-0 overflow-hidden rounded-xl sm:size-14">
+          <Image src={product.image} alt="" fill sizes="56px" className="object-cover" placeholder={SHIMMER} />
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
+        <p className="line-clamp-2 text-[15px] font-bold leading-tight sm:text-base">{product.name}</p>
+        <p className="whitespace-nowrap text-sm text-ink/60">{formatPrice(product.price)} c/u</p>
+      </div>
+      <div
+        className="flex shrink-0 items-center rounded-full bg-white p-0.5 ring-1 ring-ink/10 sm:p-1"
+        role="group"
+        aria-label={`Cantidad de ${product.name}`}
+      >
+        <QtyButton
+          label={removes ? `Quitar ${product.name} del pedido` : "Restar una unidad"}
+          onClick={() => (removes ? onRemove() : onQuantity(quantity - 1))}
+          disabled={!removable && quantity <= 1}
+        >
+          {removes ? <TrashIcon className="size-[18px]" /> : "−"}
+        </QtyButton>
+        <span className="w-6 text-center text-lg font-extrabold tabular-nums sm:w-7" aria-live="polite">
+          {quantity}
+        </span>
+        <QtyButton
+          label="Sumar una unidad"
+          onClick={() => onQuantity(Math.min(MAX_QUANTITY, quantity + 1))}
+          disabled={quantity >= MAX_QUANTITY}
+        >
+          +
+        </QtyButton>
+      </div>
+    </li>
+  );
+}
+
+function ExtraCard({ product, added, onAdd }: { product: OrderProduct; added: boolean; onAdd: () => void }) {
+  return (
+    <li className="flex w-36 shrink-0 snap-start flex-col rounded-2xl bg-white p-2 ring-1 ring-ink/10">
+      <div className="relative aspect-square overflow-hidden rounded-xl bg-bg">
+        {product.image && (
+          <Image src={product.image} alt="" fill sizes="144px" className="object-cover" placeholder={SHIMMER} />
+        )}
+      </div>
+      <p className="mt-2 line-clamp-2 text-sm font-bold leading-tight">{product.name}</p>
+      <p className="mb-2 mt-0.5 flex-1 text-sm text-ink/60">{formatPrice(product.price)}</p>
+      <button
+        type="button"
+        onClick={onAdd}
+        aria-disabled={added}
+        aria-label={added ? `${product.name} ya está en tu pedido` : `Agregar ${product.name} al pedido`}
+        className="flex h-10 items-center justify-center gap-1.5 rounded-xl bg-aqua/15 text-sm font-extrabold text-aqua-dark outline-none ring-1 ring-aqua-dark/25 transition hover:bg-aqua/25 focus-visible:ring-2 focus-visible:ring-aqua-dark active:scale-95 aria-disabled:bg-aqua-dark aria-disabled:text-white aria-disabled:ring-0 aria-disabled:active:scale-100"
+      >
+        {added ? (
+          <>
+            <CheckIcon className="size-3.5" /> Agregado
+          </>
+        ) : (
+          "+ Agregar"
+        )}
+      </button>
+    </li>
+  );
+}
+
 function QtyButton({
   label,
   onClick,
@@ -452,7 +575,7 @@ function QtyButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className="flex size-10 items-center justify-center rounded-full text-xl font-bold text-aqua-dark outline-none transition hover:bg-aqua/15 focus-visible:ring-2 focus-visible:ring-aqua/60 active:scale-90 disabled:opacity-30 disabled:hover:bg-transparent"
+      className="flex size-9 items-center justify-center rounded-full text-xl sm:size-10 font-bold text-aqua-dark outline-none transition hover:bg-aqua/15 focus-visible:ring-2 focus-visible:ring-aqua/60 active:scale-90 disabled:opacity-30 disabled:hover:bg-transparent"
     >
       {children}
     </button>
@@ -465,6 +588,14 @@ function ReceiptRow({ label, value, strong }: { label: string; value: string; st
       <dt className={`min-w-0 truncate ${strong ? "font-bold text-white" : "text-white/60"}`}>{label}</dt>
       <dd className={`max-w-[60%] truncate text-right ${strong ? "font-bold tabular-nums" : "text-white/90"}`}>{value}</dd>
     </div>
+  );
+}
+
+function TrashIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <path d="M4 6h12M8 6V4.5h4V6m-6 0 .6 9.5h6.8L14 6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 
