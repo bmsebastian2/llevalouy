@@ -1,10 +1,8 @@
-import Image from "next/image";
-import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ProductCard from "@/components/ProductCard";
 import { getActiveProducts } from "@/lib/products";
-import { discountPercent, formatPrice } from "@/lib/format";
-import { SHIMMER } from "@/lib/shimmer";
+import { site } from "@/lib/site";
 
 export const revalidate = 60;
 
@@ -14,57 +12,45 @@ export default async function HomePage() {
   return (
     <>
       <Header />
-      <main className="mx-auto max-w-5xl px-4 py-8">
-        <h1 className="text-3xl font-extrabold leading-tight sm:text-4xl">
-          Llevalo hoy, <span className="text-aqua-dark">pagás al recibir.</span>
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:py-10">
+        <h1 className="max-w-xl text-balance text-[2rem] font-extrabold leading-[1.05] tracking-tight sm:text-5xl">
+          Hallazgos que te hacen la vida{" "}
+          {/* Subrayado grueso tipo marcador: el aqua va de fondo, nunca como color de texto */}
+          <span className="bg-[linear-gradient(transparent_60%,var(--aqua)_60%,var(--aqua)_88%,transparent_88%)] box-decoration-clone">
+            más fácil
+          </span>
         </h1>
-        <p className="mt-2 text-ink/70">Envío en el día en Montevideo y a todo el país.</p>
+        <p className="mt-3 text-ink/70">Cosas simples que resuelven problemas de todos los días.</p>
 
-        <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-          {products.map((p, i) => {
-            const off = discountPercent(p.price, p.compareAtPrice);
-            return (
-              <li key={p.id} className="flex">
-                <Link
-                  href={`/p/${p.slug}`}
-                  className="group flex w-full flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-ink/5 transition hover:shadow-md"
-                >
-                  <div className="relative aspect-square">
-                    <Image
-                      src={p.images[0]}
-                      alt={p.name}
-                      fill
-                      sizes="(min-width: 1024px) 330px, (min-width: 640px) 33vw, 50vw"
-                      className="object-cover transition group-hover:scale-[1.02]"
-                      loading={i < 2 ? "eager" : "lazy"}
-                      fetchPriority={i === 0 ? "high" : "auto"}
-                      placeholder={SHIMMER}
-                    />
-                    {off && (
-                      <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-0.5 text-xs font-bold text-white">
-                        -{off}%
-                      </span>
-                    )}
-                  </div>
-                  {/* Mismo alto en todas: título a 2 líneas fijas y precio pegado abajo */}
-                  <div className="flex flex-1 flex-col p-3">
-                    <h2 className="line-clamp-2 min-h-[2.5em] text-[15px] font-bold leading-tight sm:text-base">
-                      {p.name}
-                    </h2>
-                    <div className="mt-auto pt-2">
-                      <s className="block h-4 text-xs leading-4 text-ink/50">
-                        {p.compareAtPrice ? formatPrice(p.compareAtPrice) : ""}
-                      </s>
-                      <span className="block whitespace-nowrap text-lg font-extrabold leading-tight text-aqua-dark">
-                        {formatPrice(p.price)}
-                      </span>
-                    </div>
-                  </div>
-                </Link>
+        {products.length > 0 ? (
+          <ul className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+            {products.map((p, i) => (
+              <li key={p.id} className={i === 0 ? "sm:col-span-2" : undefined}>
+                <ProductCard product={p} index={i} featured={i === 0} label={i === 0 ? "Más vendido" : undefined} />
               </li>
-            );
-          })}
-        </ul>
+            ))}
+          </ul>
+        ) : (
+          <div className="mt-8 rounded-[28px] bg-white px-6 py-10 text-center ring-1 ring-ink/5">
+            <svg viewBox="0 0 64 64" aria-hidden="true" className="mx-auto size-16 text-aqua-dark">
+              <path d="M24 22c0-12 16-12 16 0" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round" />
+              <rect x="12" y="20" width="40" height="36" rx="10" fill="currentColor" fillOpacity=".15" />
+              <path d="M23 38l6 6 12-12" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <h2 className="mt-4 text-xl font-extrabold">Estamos reponiendo</h2>
+            <p className="mx-auto mt-2 max-w-sm text-ink/70">
+              Ahora no hay productos disponibles. En Instagram avisamos apenas vuelven.
+            </p>
+            <a
+              href={`https://instagram.com/${site.instagram}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex min-h-12 items-center rounded-2xl bg-aqua px-6 font-extrabold text-ink focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-aqua-dark focus-visible:ring-offset-2"
+            >
+              Seguinos en @{site.instagram}
+            </a>
+          </div>
+        )}
       </main>
       <Footer />
     </>
