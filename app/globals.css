@@ -35,6 +35,13 @@ body {
   display: none;
 }
 
+/* Troquel del ticket de pedido: semicírculos blancos que "muerden" el fondo */
+.ticket-edge {
+  height: 10px;
+  background: radial-gradient(circle at 10px 0, var(--white) 7px, transparent 7.5px) repeat-x;
+  background-size: 20px 10px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

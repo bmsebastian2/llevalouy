@@ -27,22 +27,38 @@ const PAYMENT_HINT: Record<PaymentMethod, string> = {
 const PAYMENT_ICON: Record<PaymentMethod, React.ReactNode> = {
   cash: "💵",
   transfer: "🏦",
-  mercadopago: <Image src="/brand/mercadopago.svg" alt="" width={32} height={32} className="size-8" />,
+  mercadopago: <Image src="/brand/mercadopago.svg" alt="" width={28} height={28} className="size-7" />,
 };
 
+/** Campos que alimentan el recorrido y el ticket en vivo */
+type Tracked = "name" | "phone" | "department" | "city" | "address";
+
+type StepStatus = "done" | "current" | "todo" | "error";
+
 const inputClass =
-  "mt-1 block h-12 w-full rounded-xl border border-ink/15 bg-white px-4 text-base outline-none transition focus:border-aqua-dark focus:ring-2 focus:ring-aqua/40 aria-[invalid=true]:border-red-500";
+  "mt-1.5 block h-12 w-full rounded-xl border border-ink/15 bg-bg/50 px-4 text-base outline-none transition placeholder:text-ink/35 focus:border-aqua-dark focus:bg-white focus:ring-2 focus:ring-aqua/40 aria-[invalid=true]:border-red-500 aria-[invalid=true]:bg-red-50/60";
+
+const labelClass = "text-sm font-bold";
 
 export default function OrderForm({ slug, name, price, image }: Props) {
   const [state, formAction, pending] = useActionState(submitOrder, initialState);
+  const v = state.values ?? {};
+
   const [quantity, setQuantity] = useState(() => Number(state.values?.quantity) || 1);
   const [payment, setPayment] = useState<PaymentMethod>(() =>
     PAYMENT_METHODS.includes(state.values?.paymentMethod as PaymentMethod)
       ? (state.values?.paymentMethod as PaymentMethod)
       : "cash",
   );
+  const [fields, setFields] = useState<Record<Tracked, string>>(() => ({
+    name: v.name ?? "",
+    phone: v.phone ?? "",
+    department: v.department || "Montevideo",
+    city: v.city ?? "",
+    address: v.address ?? "",
+  }));
+  const [showNotes, setShowNotes] = useState(() => Boolean(v.notes || state.errors?.notes));
 
-  const v = state.values ?? {};
   const err = (f: OrderField) => state.errors?.[f];
   const errProps = (f: OrderField) =>
     err(f) ? { "aria-invalid": true as const, "aria-describedby": `${f}-error` } : {};
@@ -56,48 +72,57 @@ export default function OrderForm({ slug, name, price, image }: Props) {
     ) : null;
   }
 
+  function track(e: React.FormEvent<HTMLFormElement>) {
+    const t = e.target as HTMLInputElement;
+    if (t.name in fields) setFields((f) => ({ ...f, [t.name]: t.value }));
+  }
+
+  // Cada parada se completa cuando tiene lo suyo y la anterior ya está lista
+  const filled = (s: string) => s.trim().length > 0;
+  const ready = [
+    quantity >= 1,
+    filled(fields.name) && fields.phone.replace(/\D/g, "").length >= 8,
+    filled(fields.city) && filled(fields.address),
+    true,
+  ];
+  const stepErrors = [
+    false,
+    Boolean(err("name") || err("phone")),
+    Boolean(err("department") || err("city") || err("address") || err("notes")),
+    Boolean(err("paymentMethod")),
+  ];
+  let reached = true;
+  let currentAssigned = false;
+  const status: StepStatus[] = ready.map((ok, i) => {
+    if (stepErrors[i]) return "error";
+    const done = reached && ok;
+    reached = done;
+    if (done) return "done";
+    if (!currentAssigned) {
+      currentAssigned = true;
+      return "current";
+    }
+    return "todo";
+  });
+
   if (state.success) return <OrderSuccess {...state.success} />;
 
-  return (
-    <form action={formAction} noValidate className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-ink/5 sm:p-8">
-      <h2 className="text-2xl font-extrabold">Hacé tu pedido</h2>
-      <p className="mt-1 text-ink/70">No pagás nada ahora. Al confirmar se abre WhatsApp con tu pedido listo para enviar.</p>
+  const destination = filled(fields.city) ? `${fields.city.trim()}, ${fields.department}` : fields.department;
 
-      {/* Resumen + cantidad */}
-      <div className="mt-5 flex items-center gap-4 rounded-2xl bg-bg p-3">
-        {image && (
-          <div className="relative size-16 shrink-0 overflow-hidden rounded-xl">
-            <Image src={image} alt="" fill sizes="64px" className="object-cover" placeholder={SHIMMER} />
-          </div>
-        )}
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-bold">{name}</p>
-          <p className="text-sm text-ink/70">{formatPrice(price)} c/u</p>
-        </div>
-        <div className="flex items-center rounded-xl bg-white ring-1 ring-ink/10" role="group" aria-label="Cantidad">
-          <button
-            type="button"
-            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-            disabled={quantity <= 1}
-            className="size-10 text-xl font-bold text-aqua-dark disabled:opacity-30"
-            aria-label="Restar una unidad"
-          >
-            −
-          </button>
-          <span className="w-6 text-center font-bold" aria-live="polite">
-            {quantity}
-          </span>
-          <button
-            type="button"
-            onClick={() => setQuantity((q) => Math.min(MAX_QUANTITY, q + 1))}
-            disabled={quantity >= MAX_QUANTITY}
-            className="size-10 text-xl font-bold text-aqua-dark disabled:opacity-30"
-            aria-label="Sumar una unidad"
-          >
-            +
-          </button>
-        </div>
-      </div>
+  return (
+    <form
+      action={formAction}
+      onChange={track}
+      noValidate
+      className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-ink/5"
+    >
+      <header className="px-5 pt-6 sm:px-8 sm:pt-8">
+        <p className="text-sm font-bold text-aqua-dark">No pagás nada ahora</p>
+        <h2 className="mt-1 text-3xl font-extrabold leading-tight">Hacé tu pedido</h2>
+        <p className="mt-2 text-ink/70">
+          Completás 4 datos y se abre WhatsApp con tu pedido ya escrito. Vos solo tocás Enviar.
+        </p>
+      </header>
 
       <input type="hidden" name="productSlug" value={slug} />
       <input type="hidden" name="quantity" value={quantity} />
@@ -109,153 +134,344 @@ export default function OrderForm({ slug, name, price, image }: Props) {
         </label>
       </div>
 
-      <div className="mt-6 grid gap-4">
-        <label className="block">
-          <span className="font-bold">Nombre y apellido</span>
-          <input
-            name="name"
-            type="text"
-            autoComplete="name"
-            required
-            defaultValue={v.name}
-            placeholder="Ej: Carolina Martínez"
-            className={inputClass}
-            {...errProps("name")}
-          />
-          {fieldError("name")}
-        </label>
-
-        <label className="block">
-          <span className="font-bold">Celular (WhatsApp)</span>
-          <input
-            name="phone"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            required
-            defaultValue={v.phone}
-            placeholder="099 123 456"
-            className={inputClass}
-            {...errProps("phone")}
-          />
-          {fieldError("phone")}
-        </label>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block">
-            <span className="font-bold">Departamento</span>
-            <select
-              name="department"
-              required
-              defaultValue={v.department || "Montevideo"}
-              className={inputClass}
-              {...errProps("department")}
+      <ol className="mt-7 px-5 sm:px-8">
+        <Step n={1} title="Tu pedido" status={status[0]}>
+          <div className="flex items-center gap-3 rounded-2xl bg-bg p-2.5 pr-3">
+            {image && (
+              <div className="relative size-14 shrink-0 overflow-hidden rounded-xl">
+                <Image src={image} alt="" fill sizes="56px" className="object-cover" placeholder={SHIMMER} />
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-bold leading-tight">{name}</p>
+              <p className="text-sm text-ink/60">{formatPrice(price)} c/u</p>
+            </div>
+            <div
+              className="flex shrink-0 items-center rounded-full bg-white p-1 ring-1 ring-ink/10"
+              role="group"
+              aria-label="Cantidad"
             >
-              {DEPARTMENTS.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
-            {fieldError("department")}
-          </label>
+              <QtyButton
+                label="Restar una unidad"
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                disabled={quantity <= 1}
+              >
+                −
+              </QtyButton>
+              <span className="w-7 text-center text-lg font-extrabold tabular-nums" aria-live="polite">
+                {quantity}
+              </span>
+              <QtyButton
+                label="Sumar una unidad"
+                onClick={() => setQuantity((q) => Math.min(MAX_QUANTITY, q + 1))}
+                disabled={quantity >= MAX_QUANTITY}
+              >
+                +
+              </QtyButton>
+            </div>
+          </div>
+        </Step>
 
-          <label className="block">
-            <span className="font-bold">Barrio o ciudad</span>
-            <input
-              name="city"
-              type="text"
-              autoComplete="address-level2"
-              required
-              defaultValue={v.city}
-              placeholder="Ej: Pocitos"
-              className={inputClass}
-              {...errProps("city")}
-            />
-            {fieldError("city")}
-          </label>
+        <Step n={2} title="¿Quién lo recibe?" hint="Te escribimos a este número para coordinar." status={status[1]}>
+          <div className="grid gap-4">
+            <label className="block">
+              <span className={labelClass}>Nombre y apellido</span>
+              <input
+                name="name"
+                type="text"
+                autoComplete="name"
+                required
+                defaultValue={v.name}
+                placeholder="Ej: Carolina Martínez"
+                className={inputClass}
+                {...errProps("name")}
+              />
+              {fieldError("name")}
+            </label>
+
+            <label className="block">
+              <span className={labelClass}>Celular (WhatsApp)</span>
+              <input
+                name="phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                required
+                defaultValue={v.phone}
+                placeholder="099 123 456"
+                className={inputClass}
+                {...errProps("phone")}
+              />
+              {fieldError("phone")}
+            </label>
+          </div>
+        </Step>
+
+        <Step n={3} title="¿Dónde te lo llevamos?" status={status[2]}>
+          <div className="grid gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block">
+                <span className={labelClass}>Departamento</span>
+                <span className="relative block">
+                  <select
+                    name="department"
+                    required
+                    defaultValue={v.department || "Montevideo"}
+                    className={`${inputClass} appearance-none pr-10`}
+                    {...errProps("department")}
+                  >
+                    {DEPARTMENTS.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                  <svg
+                    viewBox="0 0 20 20"
+                    className="pointer-events-none absolute right-3.5 top-1/2 mt-[3px] size-5 -translate-y-1/2 text-ink/50"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    aria-hidden
+                  >
+                    <path d="m5 8 5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                {fieldError("department")}
+              </label>
+
+              <label className="block">
+                <span className={labelClass}>Barrio o ciudad</span>
+                <input
+                  name="city"
+                  type="text"
+                  autoComplete="address-level2"
+                  required
+                  defaultValue={v.city}
+                  placeholder="Ej: Pocitos"
+                  className={inputClass}
+                  {...errProps("city")}
+                />
+                {fieldError("city")}
+              </label>
+            </div>
+
+            <label className="block">
+              <span className={labelClass}>Dirección</span>
+              <input
+                name="address"
+                type="text"
+                autoComplete="street-address"
+                required
+                defaultValue={v.address}
+                placeholder="Calle, número, apto y esquina"
+                className={inputClass}
+                {...errProps("address")}
+              />
+              {fieldError("address")}
+            </label>
+
+            {showNotes ? (
+              <label className="block">
+                <span className={labelClass}>
+                  Indicaciones para la entrega <span className="font-normal text-ink/50">(opcional)</span>
+                </span>
+                <textarea
+                  name="notes"
+                  rows={2}
+                  maxLength={300}
+                  defaultValue={v.notes}
+                  placeholder="Horario en que estás, referencias…"
+                  className={`${inputClass} h-auto py-3`}
+                  autoFocus={!v.notes}
+                  {...errProps("notes")}
+                />
+                {fieldError("notes")}
+              </label>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowNotes(true)}
+                className="justify-self-start rounded-lg text-sm font-bold text-aqua-dark underline decoration-aqua decoration-2 underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-aqua/60"
+              >
+                + Agregar horario o referencias
+              </button>
+            )}
+          </div>
+        </Step>
+
+        <Step n={4} title="¿Cómo vas a pagar?" status={status[3]} last>
+          <fieldset {...errProps("paymentMethod")}>
+            <legend className="sr-only">Método de pago</legend>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {PAYMENT_METHODS.map((m) => (
+                <label
+                  key={m}
+                  className="group relative flex cursor-pointer items-center gap-3 rounded-2xl border-2 border-ink/10 bg-white p-3 transition has-[:checked]:border-aqua-dark has-[:checked]:bg-aqua/10 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-aqua/50 sm:flex-col sm:items-start sm:gap-2 sm:pt-3.5"
+                >
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value={m}
+                    checked={payment === m}
+                    onChange={() => setPayment(m)}
+                    className="sr-only"
+                  />
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-bg text-2xl group-has-[:checked]:bg-white" aria-hidden>
+                    {PAYMENT_ICON[m]}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-bold leading-tight">{PAYMENT_METHOD_LABEL[m]}</span>
+                    <span className="mt-0.5 block text-sm leading-snug text-ink/60">{PAYMENT_HINT[m]}</span>
+                  </span>
+                  <span
+                    className="flex size-5 shrink-0 items-center justify-center rounded-full border-2 border-ink/20 transition group-has-[:checked]:border-aqua-dark group-has-[:checked]:bg-aqua-dark sm:absolute sm:right-3 sm:top-3"
+                    aria-hidden
+                  >
+                    <CheckIcon className="size-3 text-white opacity-0 group-has-[:checked]:opacity-100" />
+                  </span>
+                </label>
+              ))}
+            </div>
+            {fieldError("paymentMethod")}
+          </fieldset>
+        </Step>
+      </ol>
+
+      {/* Ticket: resumen en vivo del pedido */}
+      <div className="relative mt-2 bg-ink px-5 pb-6 pt-8 text-white sm:px-8 sm:pb-8">
+        <span className="ticket-edge absolute inset-x-0 top-0" aria-hidden />
+
+        <dl className="grid gap-2 text-sm">
+          <ReceiptRow label={`${name} × ${quantity}`} value={formatPrice(price * quantity)} strong />
+          <ReceiptRow label="Lo recibe" value={filled(fields.name) ? fields.name.trim() : "—"} />
+          <ReceiptRow label="Entrega en" value={destination} />
+          <ReceiptRow label="Pago" value={PAYMENT_METHOD_LABEL[payment]} />
+        </dl>
+
+        <div className="mt-4 flex items-baseline justify-between gap-4 border-t border-dashed border-white/25 pt-4">
+          <span className="font-bold">{payment === "cash" ? "Total a pagar al recibir" : "Total a pagar"}</span>
+          <span className="text-3xl font-extrabold tabular-nums text-aqua">{formatPrice(price * quantity)}</span>
         </div>
 
-        <label className="block">
-          <span className="font-bold">Dirección</span>
-          <input
-            name="address"
-            type="text"
-            autoComplete="street-address"
-            required
-            defaultValue={v.address}
-            placeholder="Calle, número, apto y esquina"
-            className={inputClass}
-            {...errProps("address")}
-          />
-          {fieldError("address")}
-        </label>
+        {state.message && (
+          <p role="alert" className="mt-4 rounded-xl bg-red-500/15 px-4 py-3 text-sm font-medium text-red-100 ring-1 ring-red-400/40">
+            {state.message}
+          </p>
+        )}
 
-        <fieldset {...errProps("paymentMethod")}>
-          <legend className="font-bold">¿Cómo vas a pagar?</legend>
-          <div className="mt-1 grid gap-2 sm:grid-cols-3">
-            {PAYMENT_METHODS.map((m) => (
-              <label
-                key={m}
-                className="flex cursor-pointer items-center gap-3 rounded-xl border border-ink/15 bg-white p-3 transition has-[:checked]:border-aqua-dark has-[:checked]:bg-aqua/10 has-[:checked]:ring-2 has-[:checked]:ring-aqua/40 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-aqua/40 sm:flex-col sm:items-start sm:gap-1"
-              >
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value={m}
-                  checked={payment === m}
-                  onChange={() => setPayment(m)}
-                  className="sr-only"
-                />
-                <span className="flex size-8 items-center justify-center text-2xl" aria-hidden>
-                  {PAYMENT_ICON[m]}
-                </span>
-                <span>
-                  <span className="block font-bold leading-tight">{PAYMENT_METHOD_LABEL[m]}</span>
-                  <span className="block text-sm text-ink/60">{PAYMENT_HINT[m]}</span>
-                </span>
-              </label>
-            ))}
-          </div>
-          {fieldError("paymentMethod")}
-        </fieldset>
-
-        <label className="block">
-          <span className="font-bold">
-            Comentarios <span className="font-normal text-ink/50">(opcional)</span>
-          </span>
-          <textarea
-            name="notes"
-            rows={2}
-            maxLength={300}
-            defaultValue={v.notes}
-            placeholder="Horario en que estás, referencias…"
-            className={`${inputClass} h-auto py-3`}
-            {...errProps("notes")}
-          />
-          {fieldError("notes")}
-        </label>
+        <button
+          type="submit"
+          disabled={pending}
+          aria-busy={pending}
+          className="mt-5 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-aqua px-8 text-lg font-extrabold text-ink shadow-[0_6px_0_0_var(--aqua-dark)] outline-none transition focus-visible:ring-4 focus-visible:ring-white/40 active:translate-y-1 active:shadow-[0_2px_0_0_var(--aqua-dark)] disabled:translate-y-1 disabled:opacity-70 disabled:shadow-[0_2px_0_0_var(--aqua-dark)]"
+        >
+          {pending ? (
+            <>
+              <span className="size-5 animate-spin rounded-full border-[3px] border-ink/25 border-t-ink motion-reduce:animate-none" aria-hidden />
+              Enviando…
+            </>
+          ) : (
+            <>
+              Confirmar por WhatsApp <span aria-hidden>→</span>
+            </>
+          )}
+        </button>
+        <p className="mt-3 text-center text-sm text-white/60">🔒 Tus datos solo se usan para coordinar la entrega.</p>
       </div>
-
-      <div className="mt-6 flex items-baseline justify-between border-t border-ink/10 pt-4">
-        <span className="font-bold">{payment === "cash" ? "Total a pagar al recibir" : "Total a pagar"}</span>
-        <span className="text-2xl font-extrabold text-aqua-dark">{formatPrice(price * quantity)}</span>
-      </div>
-
-      {state.message && (
-        <p role="alert" className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-          {state.message}
-        </p>
-      )}
-
-      <button
-        type="submit"
-        disabled={pending}
-        className="mt-5 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-aqua px-8 text-lg font-extrabold text-ink shadow-[0_6px_0_0_var(--aqua-dark)] transition active:translate-y-1 active:shadow-[0_2px_0_0_var(--aqua-dark)] disabled:translate-y-1 disabled:opacity-70 disabled:shadow-[0_2px_0_0_var(--aqua-dark)]"
-      >
-        {pending ? "Enviando…" : "Confirmar por WhatsApp"}
-      </button>
-      <p className="mt-3 text-center text-sm text-ink/60">🔒 Tus datos solo se usan para coordinar la entrega.</p>
     </form>
+  );
+}
+
+function Step({
+  n,
+  title,
+  hint,
+  status,
+  last,
+  children,
+}: {
+  n: number;
+  title: string;
+  hint?: string;
+  status: StepStatus;
+  last?: boolean;
+  children: React.ReactNode;
+}) {
+  const dot = {
+    done: "bg-aqua-dark text-white",
+    current: "bg-aqua/20 text-aqua-dark ring-2 ring-aqua-dark",
+    todo: "bg-white text-ink/45 ring-2 ring-ink/15",
+    error: "bg-red-600 text-white",
+  }[status];
+  const srStatus = { done: "listo", current: "en curso", todo: "pendiente", error: "revisar" }[status];
+
+  return (
+    <li className={`relative grid grid-cols-[2rem_1fr] gap-x-3 sm:gap-x-4 ${last ? "pb-7" : "pb-8"}`}>
+      {/* Tramo del recorrido hasta la siguiente parada */}
+      {!last && (
+        <span
+          aria-hidden
+          className={`absolute bottom-1 left-[15px] top-10 border-l-2 motion-safe:transition-colors ${
+            status === "done" ? "border-solid border-aqua-dark" : "border-dashed border-ink/15"
+          }`}
+        />
+      )}
+      <span
+        aria-hidden
+        className={`relative flex size-8 items-center justify-center rounded-full text-sm font-extrabold motion-safe:transition-all motion-safe:duration-300 ${dot}`}
+      >
+        {status === "done" ? <CheckIcon className="size-4" /> : status === "error" ? "!" : n}
+      </span>
+      <div className="min-w-0">
+        <h3 className="text-lg font-extrabold leading-8">
+          {title}
+          <span className="sr-only"> ({srStatus})</span>
+        </h3>
+        {hint && <p className="-mt-0.5 text-sm text-ink/60">{hint}</p>}
+        <div className="mt-3">{children}</div>
+      </div>
+    </li>
+  );
+}
+
+function QtyButton({
+  label,
+  onClick,
+  disabled,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  disabled: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      className="flex size-10 items-center justify-center rounded-full text-xl font-bold text-aqua-dark outline-none transition hover:bg-aqua/15 focus-visible:ring-2 focus-visible:ring-aqua/60 active:scale-90 disabled:opacity-30 disabled:hover:bg-transparent"
+    >
+      {children}
+    </button>
+  );
+}
+
+function ReceiptRow({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
+  return (
+    <div className="flex items-baseline justify-between gap-4">
+      <dt className={`min-w-0 truncate ${strong ? "font-bold text-white" : "text-white/60"}`}>{label}</dt>
+      <dd className={`max-w-[60%] truncate text-right ${strong ? "font-bold tabular-nums" : "text-white/90"}`}>{value}</dd>
+    </div>
+  );
+}
+
+function CheckIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 16 16" className={className} fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+      <path d="m3.5 8.5 3 3 6-7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
