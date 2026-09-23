@@ -1,5 +1,5 @@
 import "server-only";
-import type { Order } from "@/types/order";
+import { PAYMENT_METHOD_LABEL, type Order } from "@/types/order";
 import { formatPrice } from "@/lib/format";
 
 /** Número de WhatsApp de la tienda en formato internacional sin "+", ej: 59899123456 */
@@ -19,7 +19,8 @@ export function buildOrderMessage(order: Order): string {
     "¡Hola Llevalo UY! 👋 Quiero hacer este pedido:",
     "",
     `🛒 *${order.productName}* x${order.quantity}`,
-    `💵 Total: *${formatPrice(order.total)}* (pago al recibir)`,
+    `💵 Total: *${formatPrice(order.total)}*`,
+    `💳 Pago: ${PAYMENT_METHOD_LABEL[order.paymentMethod]}`,
     "",
     `👤 Nombre: ${order.name}`,
     `📱 Celular: ${formatUyPhone(order.phone)}`,
@@ -35,7 +36,7 @@ export function buildCustomerMessage(order: Order): string {
   const firstName = order.name.split(" ")[0];
   const summary = [
     `🛒 *${order.productName}* x${order.quantity}`,
-    `💵 Total: *${formatPrice(order.total)}* (pagás al recibir)`,
+    `💵 Total: *${formatPrice(order.total)}* · ${PAYMENT_METHOD_LABEL[order.paymentMethod]}`,
     `📍 ${order.address}, ${order.city}, ${order.department}`,
   ];
 
@@ -46,7 +47,7 @@ export function buildCustomerMessage(order: Order): string {
         "",
         ...summary,
         "",
-        "Tené el efectivo a mano. ¡Gracias por tu compra!",
+        order.paymentMethod === "cash" ? "Tené el efectivo a mano. ¡Gracias por tu compra!" : "¡Gracias por tu compra!",
       ].join("\n");
     case "delivered":
       return `¡Hola ${firstName}! 😊 Esperamos que disfrutes tu ${order.productName}. Si tenés un minuto, contanos qué te pareció. ¡Gracias por comprar en Llevalo UY!`;

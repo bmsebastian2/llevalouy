@@ -1,8 +1,15 @@
-import { DEPARTMENTS, MAX_QUANTITY, type Department, type OrderInput } from "@/types/order";
+import {
+  DEPARTMENTS,
+  MAX_QUANTITY,
+  PAYMENT_METHODS,
+  type Department,
+  type OrderInput,
+  type PaymentMethod,
+} from "@/types/order";
 
 // Validación compartida: la usa el servidor (fuente de verdad) y puede usarla el cliente.
 
-export type OrderField = "name" | "phone" | "department" | "city" | "address" | "quantity" | "notes";
+export type OrderField = "name" | "phone" | "department" | "city" | "address" | "paymentMethod" | "quantity" | "notes";
 export type OrderErrors = Partial<Record<OrderField, string>>;
 export type OrderRaw = Partial<Record<OrderField | "productSlug", string>>;
 
@@ -41,6 +48,9 @@ export function validateOrder(raw: OrderRaw): ValidationResult {
   if (address.length < 5) errors.address = "Escribí calle, número y esquina.";
   else if (address.length > 160) errors.address = "La dirección es demasiado larga.";
 
+  const paymentMethod = clean(raw.paymentMethod);
+  if (!PAYMENT_METHODS.includes(paymentMethod as PaymentMethod)) errors.paymentMethod = "Elegí cómo vas a pagar.";
+
   const quantity = Number(raw.quantity ?? "1");
   if (!Number.isInteger(quantity) || quantity < 1 || quantity > MAX_QUANTITY) {
     errors.quantity = `Podés pedir de 1 a ${MAX_QUANTITY} unidades.`;
@@ -63,6 +73,7 @@ export function validateOrder(raw: OrderRaw): ValidationResult {
       department: department as Department,
       city,
       address,
+      paymentMethod: paymentMethod as PaymentMethod,
       notes: notes || undefined,
     },
   };

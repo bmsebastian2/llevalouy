@@ -34,12 +34,18 @@ create table if not exists public.orders (
   department    text not null,
   city          text not null,
   address       text not null,
+  payment_method text not null default 'cash'
+                check (payment_method in ('cash', 'transfer', 'mercadopago')),
   notes         text,
   status        text not null default 'pending'
                 check (status in ('pending', 'confirmed', 'shipped', 'delivered', 'cancelled')),
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now()
 );
+
+-- Bases creadas antes de agregar el método de pago
+alter table public.orders add column if not exists payment_method text not null default 'cash'
+  check (payment_method in ('cash', 'transfer', 'mercadopago'));
 
 create index if not exists orders_created_at_idx on public.orders (created_at desc);
 create index if not exists orders_status_idx on public.orders (status);

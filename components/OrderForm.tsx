@@ -6,7 +6,7 @@ import { submitOrder, type OrderFormState } from "@/app/p/[slug]/actions";
 import { formatPrice } from "@/lib/format";
 import { SHIMMER } from "@/lib/shimmer";
 import OrderSuccess from "./OrderSuccess";
-import { DEPARTMENTS, MAX_QUANTITY } from "@/types/order";
+import { DEPARTMENTS, MAX_QUANTITY, PAYMENT_METHODS, PAYMENT_METHOD_LABEL, type PaymentMethod } from "@/types/order";
 import type { OrderField } from "@/lib/order-validation";
 
 type Props = {
@@ -18,12 +18,29 @@ type Props = {
 
 const initialState: OrderFormState = {};
 
+const PAYMENT_HINT: Record<PaymentMethod, string> = {
+  cash: "Pagás cuando te llega",
+  transfer: "Te pasamos los datos por WhatsApp",
+  mercadopago: "Te mandamos el link de pago",
+};
+
+const PAYMENT_ICON: Record<PaymentMethod, React.ReactNode> = {
+  cash: "💵",
+  transfer: "🏦",
+  mercadopago: <Image src="/brand/mercadopago.svg" alt="" width={32} height={32} className="size-8" />,
+};
+
 const inputClass =
   "mt-1 block h-12 w-full rounded-xl border border-ink/15 bg-white px-4 text-base outline-none transition focus:border-aqua-dark focus:ring-2 focus:ring-aqua/40 aria-[invalid=true]:border-red-500";
 
 export default function OrderForm({ slug, name, price, image }: Props) {
   const [state, formAction, pending] = useActionState(submitOrder, initialState);
   const [quantity, setQuantity] = useState(() => Number(state.values?.quantity) || 1);
+  const [payment, setPayment] = useState<PaymentMethod>(() =>
+    PAYMENT_METHODS.includes(state.values?.paymentMethod as PaymentMethod)
+      ? (state.values?.paymentMethod as PaymentMethod)
+      : "cash",
+  );
 
   const v = state.values ?? {};
   const err = (f: OrderField) => state.errors?.[f];
@@ -174,6 +191,35 @@ export default function OrderForm({ slug, name, price, image }: Props) {
           {fieldError("address")}
         </label>
 
+        <fieldset {...errProps("paymentMethod")}>
+          <legend className="font-bold">¿Cómo vas a pagar?</legend>
+          <div className="mt-1 grid gap-2 sm:grid-cols-3">
+            {PAYMENT_METHODS.map((m) => (
+              <label
+                key={m}
+                className="flex cursor-pointer items-center gap-3 rounded-xl border border-ink/15 bg-white p-3 transition has-[:checked]:border-aqua-dark has-[:checked]:bg-aqua/10 has-[:checked]:ring-2 has-[:checked]:ring-aqua/40 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-aqua/40 sm:flex-col sm:items-start sm:gap-1"
+              >
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value={m}
+                  checked={payment === m}
+                  onChange={() => setPayment(m)}
+                  className="sr-only"
+                />
+                <span className="flex size-8 items-center justify-center text-2xl" aria-hidden>
+                  {PAYMENT_ICON[m]}
+                </span>
+                <span>
+                  <span className="block font-bold leading-tight">{PAYMENT_METHOD_LABEL[m]}</span>
+                  <span className="block text-sm text-ink/60">{PAYMENT_HINT[m]}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+          {fieldError("paymentMethod")}
+        </fieldset>
+
         <label className="block">
           <span className="font-bold">
             Comentarios <span className="font-normal text-ink/50">(opcional)</span>
@@ -192,7 +238,7 @@ export default function OrderForm({ slug, name, price, image }: Props) {
       </div>
 
       <div className="mt-6 flex items-baseline justify-between border-t border-ink/10 pt-4">
-        <span className="font-bold">Total a pagar al recibir</span>
+        <span className="font-bold">{payment === "cash" ? "Total a pagar al recibir" : "Total a pagar"}</span>
         <span className="text-2xl font-extrabold text-aqua-dark">{formatPrice(price * quantity)}</span>
       </div>
 

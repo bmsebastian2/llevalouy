@@ -57,6 +57,7 @@ export async function createOrder(product: Product, input: OrderInput): Promise<
         department: draft.department,
         city: draft.city,
         address: draft.address,
+        payment_method: draft.paymentMethod,
         notes: draft.notes ?? null,
         status: draft.status,
       })

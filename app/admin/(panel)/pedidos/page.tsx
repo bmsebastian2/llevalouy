@@ -3,7 +3,7 @@ import { requireAdmin } from "@/lib/admin/auth";
 import { countOrdersByStatus, listOrders } from "@/lib/admin/data";
 import { formatPrice } from "@/lib/format";
 import { buildCustomerMessage, formatUyPhone, whatsappUrl } from "@/lib/whatsapp";
-import { ORDER_STATUSES, ORDER_STATUS_LABEL, type Order, type OrderStatus } from "@/types/order";
+import { ORDER_STATUSES, ORDER_STATUS_LABEL, PAYMENT_METHOD_LABEL, type Order, type OrderStatus } from "@/types/order";
 import OrderStatusSelect from "@/components/admin/OrderStatusSelect";
 
 export const metadata = { title: "Pedidos" };
@@ -96,6 +96,7 @@ function OrderCard({ order: o }: { order: Order }) {
             {formatUyPhone(o.phone)}
           </a>
         </div>
+        <div>💳 {PAYMENT_METHOD_LABEL[o.paymentMethod] ?? o.paymentMethod}</div>
         {o.notes && <div>📝 {o.notes}</div>}
       </dl>
 

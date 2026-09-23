@@ -24,6 +24,15 @@ export type Department = (typeof DEPARTMENTS)[number];
 
 export const MAX_QUANTITY = 5;
 
+export const PAYMENT_METHODS = ["cash", "transfer", "mercadopago"] as const;
+export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+
+export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
+  cash: "Efectivo al recibir",
+  transfer: "Transferencia bancaria",
+  mercadopago: "Mercado Pago",
+};
+
 /** Lo que manda el cliente (ya validado y normalizado) */
 export type OrderInput = {
   productSlug: string;
@@ -34,6 +43,7 @@ export type OrderInput = {
   department: Department;
   city: string;
   address: string;
+  paymentMethod: PaymentMethod;
   notes?: string;
 };
 

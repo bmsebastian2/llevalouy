@@ -13,7 +13,7 @@ export type OrderFormState = {
   success?: { code: string; whatsappUrl: string };
 };
 
-const FIELDS = ["productSlug", "quantity", "name", "phone", "department", "city", "address", "notes"] as const;
+const FIELDS = ["productSlug", "quantity", "name", "phone", "department", "city", "address", "paymentMethod", "notes"] as const;
 
 export async function submitOrder(_prev: OrderFormState, formData: FormData): Promise<OrderFormState> {
   const store = getStoreWhatsapp();

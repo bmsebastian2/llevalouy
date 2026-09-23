@@ -2,7 +2,7 @@ import "server-only";
 import { getSupabase } from "@/lib/supabase";
 import { PRODUCT_COLUMNS, toProduct, type ProductRow } from "@/lib/products";
 import type { Product } from "@/types/product";
-import type { Department, Order, OrderStatus } from "@/types/order";
+import type { Department, Order, OrderStatus, PaymentMethod } from "@/types/order";
 import type { ProductInput } from "./product-validation";
 
 // Acceso a datos del panel. Solo se llama después de requireAdmin().
@@ -31,6 +31,7 @@ type OrderRow = {
   department: string;
   city: string;
   address: string;
+  payment_method: PaymentMethod;
   notes: string | null;
   status: OrderStatus;
   created_at: string;
@@ -51,6 +52,7 @@ function toOrder(r: OrderRow): Order {
     department: r.department as Department,
     city: r.city,
     address: r.address,
+    paymentMethod: r.payment_method,
     notes: r.notes ?? undefined,
     status: r.status,
     createdAt: r.created_at,
