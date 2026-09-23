@@ -37,7 +37,16 @@ export type OrderInput = {
   notes?: string;
 };
 
-export type OrderStatus = "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
+export const ORDER_STATUSES = ["pending", "confirmed", "shipped", "delivered", "cancelled"] as const;
+export type OrderStatus = (typeof ORDER_STATUSES)[number];
+
+export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
+  pending: "Pendiente",
+  confirmed: "Confirmado",
+  shipped: "Enviado",
+  delivered: "Entregado",
+  cancelled: "Cancelado",
+};
 
 /** Pedido guardado. Precio y total se calculan en el servidor, nunca vienen del cliente. */
 export type Order = Omit<OrderInput, "productSlug"> & {

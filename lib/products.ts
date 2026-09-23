@@ -6,7 +6,7 @@ import { getSupabase } from "@/lib/supabase";
 // Única puerta de acceso a productos para la UI.
 // Lee de Supabase; si no hay credenciales configuradas usa data/mock-products.ts.
 
-type ProductRow = {
+export type ProductRow = {
   id: string;
   slug: string;
   name: string;
@@ -21,10 +21,10 @@ type ProductRow = {
   active: boolean;
 };
 
-const COLUMNS =
+export const PRODUCT_COLUMNS =
   "id, slug, name, tagline, price, compare_at_price, images, benefits, description, faqs, reviews, active";
 
-function toProduct(row: ProductRow): Product {
+export function toProduct(row: ProductRow): Product {
   return {
     id: row.id,
     slug: row.slug,
@@ -57,7 +57,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 
   const { data, error } = await db
     .from("products")
-    .select(COLUMNS)
+    .select(PRODUCT_COLUMNS)
     .eq("slug", slug)
     .eq("active", true)
     .maybeSingle<ProductRow>();
@@ -76,7 +76,7 @@ export async function getActiveProducts(): Promise<Product[]> {
 
   const { data, error } = await db
     .from("products")
-    .select(COLUMNS)
+    .select(PRODUCT_COLUMNS)
     .eq("active", true)
     .order("created_at", { ascending: true })
     .returns<ProductRow[]>();

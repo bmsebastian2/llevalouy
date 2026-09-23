@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useActionState, useState } from "react";
 import { submitOrder, type OrderFormState } from "@/app/p/[slug]/actions";
 import { formatPrice } from "@/lib/format";
+import OrderSuccess from "./OrderSuccess";
 import { DEPARTMENTS, MAX_QUANTITY } from "@/types/order";
 import type { OrderField } from "@/lib/order-validation";
 
@@ -37,10 +38,12 @@ export default function OrderForm({ slug, name, price, image }: Props) {
     ) : null;
   }
 
+  if (state.success) return <OrderSuccess {...state.success} />;
+
   return (
     <form action={formAction} noValidate className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-ink/5 sm:p-8">
       <h2 className="text-2xl font-extrabold">Hacé tu pedido</h2>
-      <p className="mt-1 text-ink/70">No pagás nada ahora. Te escribimos por WhatsApp para confirmar.</p>
+      <p className="mt-1 text-ink/70">No pagás nada ahora. Al confirmar se abre WhatsApp con tu pedido listo para enviar.</p>
 
       {/* Resumen + cantidad */}
       <div className="mt-5 flex items-center gap-4 rounded-2xl bg-bg p-3">
@@ -203,7 +206,7 @@ export default function OrderForm({ slug, name, price, image }: Props) {
         disabled={pending}
         className="mt-5 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-aqua px-8 text-lg font-extrabold text-ink shadow-[0_6px_0_0_var(--aqua-dark)] transition active:translate-y-1 active:shadow-[0_2px_0_0_var(--aqua-dark)] disabled:translate-y-1 disabled:opacity-70 disabled:shadow-[0_2px_0_0_var(--aqua-dark)]"
       >
-        {pending ? "Enviando…" : "Confirmar pedido"}
+        {pending ? "Enviando…" : "Confirmar por WhatsApp"}
       </button>
       <p className="mt-3 text-center text-sm text-ink/60">🔒 Tus datos solo se usan para coordinar la entrega.</p>
     </form>

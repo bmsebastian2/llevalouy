@@ -19,14 +19,14 @@ export default async function HomePage() {
         </h1>
         <p className="mt-2 text-ink/70">Envío en el día en Montevideo y a todo el país.</p>
 
-        <ul className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
           {products.map((p, i) => {
             const off = discountPercent(p.price, p.compareAtPrice);
             return (
-              <li key={p.id}>
+              <li key={p.id} className="flex">
                 <Link
                   href={`/p/${p.slug}`}
-                  className="group block overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-ink/5 transition hover:shadow-md"
+                  className="group flex w-full flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-ink/5 transition hover:shadow-md"
                 >
                   <div className="relative aspect-square">
                     <Image
@@ -43,14 +43,19 @@ export default async function HomePage() {
                       </span>
                     )}
                   </div>
-                  <div className="p-3">
-                    <h2 className="font-bold leading-snug">{p.name}</h2>
-                    <p className="mt-1 flex items-baseline gap-2">
-                      <span className="text-lg font-extrabold text-aqua-dark">{formatPrice(p.price)}</span>
-                      {p.compareAtPrice && (
-                        <s className="text-sm text-ink/50">{formatPrice(p.compareAtPrice)}</s>
-                      )}
-                    </p>
+                  {/* Mismo alto en todas: título a 2 líneas fijas y precio pegado abajo */}
+                  <div className="flex flex-1 flex-col p-3">
+                    <h2 className="line-clamp-2 min-h-[2.5em] text-[15px] font-bold leading-tight sm:text-base">
+                      {p.name}
+                    </h2>
+                    <div className="mt-auto pt-2">
+                      <s className="block h-4 text-xs leading-4 text-ink/50">
+                        {p.compareAtPrice ? formatPrice(p.compareAtPrice) : ""}
+                      </s>
+                      <span className="block whitespace-nowrap text-lg font-extrabold leading-tight text-aqua-dark">
+                        {formatPrice(p.price)}
+                      </span>
+                    </div>
                   </div>
                 </Link>
               </li>
