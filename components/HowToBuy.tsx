@@ -6,7 +6,7 @@ const steps = [
 
 export default function HowToBuy() {
   return (
-    <section className="bg-white px-4 py-12">
+    <section id="como-comprar" className="scroll-mt-16 bg-white px-4 py-12">
       <div className="mx-auto max-w-5xl">
         <h2 className="text-2xl font-extrabold sm:text-3xl">Comprar es así de fácil</h2>
         <ol className="mt-6 grid gap-6 md:grid-cols-3">

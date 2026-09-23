@@ -84,7 +84,12 @@ export default async function ProductPage({ params }: Props) {
           </div>
         </section>
       </main>
-      <Footer />
+      <Footer
+        pageLinks={[
+          { href: "#como-comprar", label: "Envíos" },
+          ...(product.faqs.length > 0 ? [{ href: "#preguntas", label: "Preguntas frecuentes" }] : []),
+        ]}
+      />
       <StickyCta price={product.price} />
     </>
   );
