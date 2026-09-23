@@ -5,6 +5,7 @@ import { useActionState, useRef, useState } from "react";
 import { getImageUploadUrl, saveProduct, type SaveProductState } from "@/app/admin/actions";
 import { slugify, type ProductErrors } from "@/lib/admin/product-validation";
 import { discountPercent, formatPrice } from "@/lib/format";
+import { SHIMMER } from "@/lib/shimmer";
 import type { Product, ProductBenefit, ProductFaq, ProductReview } from "@/types/product";
 
 type Draft = {
@@ -142,7 +143,7 @@ export default function ProductEditor({ product }: { product?: Product }) {
         <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5">
           {draft.images.map((src, i) => (
             <li key={src} className="relative aspect-square overflow-hidden rounded-xl bg-bg ring-1 ring-ink/10">
-              <Image src={src} alt="" fill sizes="160px" className="object-cover" />
+              <Image src={src} alt="" fill sizes="160px" className="object-cover" placeholder={SHIMMER} />
               {i === 0 && (
                 <span className="absolute left-1 top-1 rounded-md bg-ink px-1.5 py-0.5 text-[10px] font-bold text-white">
                   Principal

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useActionState, useState } from "react";
 import { submitOrder, type OrderFormState } from "@/app/p/[slug]/actions";
 import { formatPrice } from "@/lib/format";
+import { SHIMMER } from "@/lib/shimmer";
 import OrderSuccess from "./OrderSuccess";
 import { DEPARTMENTS, MAX_QUANTITY } from "@/types/order";
 import type { OrderField } from "@/lib/order-validation";
@@ -49,7 +50,7 @@ export default function OrderForm({ slug, name, price, image }: Props) {
       <div className="mt-5 flex items-center gap-4 rounded-2xl bg-bg p-3">
         {image && (
           <div className="relative size-16 shrink-0 overflow-hidden rounded-xl">
-            <Image src={image} alt="" fill sizes="64px" className="object-cover" />
+            <Image src={image} alt="" fill sizes="64px" className="object-cover" placeholder={SHIMMER} />
           </div>
         )}
         <div className="min-w-0 flex-1">

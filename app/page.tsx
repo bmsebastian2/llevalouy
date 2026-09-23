@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getActiveProducts } from "@/lib/products";
 import { discountPercent, formatPrice } from "@/lib/format";
+import { SHIMMER } from "@/lib/shimmer";
 
 export const revalidate = 60;
 
@@ -33,9 +34,11 @@ export default async function HomePage() {
                       src={p.images[0]}
                       alt={p.name}
                       fill
-                      sizes="(min-width: 640px) 33vw, 50vw"
+                      sizes="(min-width: 1024px) 330px, (min-width: 640px) 33vw, 50vw"
                       className="object-cover transition group-hover:scale-[1.02]"
-                      priority={i < 2}
+                      loading={i < 2 ? "eager" : "lazy"}
+                      fetchPriority={i === 0 ? "high" : "auto"}
+                      placeholder={SHIMMER}
                     />
                     {off && (
                       <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-0.5 text-xs font-bold text-white">

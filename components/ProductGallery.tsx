@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useRef, useState } from "react";
+import { SHIMMER } from "@/lib/shimmer";
 
 type Props = {
   images: string[];
@@ -43,7 +44,8 @@ export default function ProductGallery({ images, alt }: Props) {
                 fill
                 sizes="(min-width: 768px) 480px, 100vw"
                 className="object-cover"
-                priority={i === 0}
+                preload={i === 0}
+                placeholder={SHIMMER}
               />
             </div>
           ))}
@@ -74,7 +76,7 @@ export default function ProductGallery({ images, alt }: Props) {
                 i === active ? "ring-aqua-dark" : "ring-transparent opacity-70 hover:opacity-100"
               }`}
             >
-              <Image src={src} alt="" fill sizes="64px" className="object-cover" />
+              <Image src={src} alt="" fill sizes="64px" className="object-cover" placeholder={SHIMMER} />
             </button>
           ))}
         </div>

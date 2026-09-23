@@ -12,7 +12,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
       <header className="sticky top-0 z-30 border-b border-ink/10 bg-white">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4">
           <Link href="/admin/pedidos" className="shrink-0">
-            <Image src="/brand/logo-horizontal.svg" alt="Llevalo UY" width={108} height={28} priority />
+            <Image src="/brand/logo-horizontal.svg" alt="Llevalo UY" width={108} height={28} loading="eager" />
           </Link>
           <div className="flex items-center gap-3 text-sm">
             <Link href="/" target="_blank" className="font-medium text-ink/60 hover:text-ink">

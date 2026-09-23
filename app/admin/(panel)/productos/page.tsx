@@ -3,6 +3,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/admin/auth";
 import { listAllProducts } from "@/lib/admin/data";
 import { discountPercent, formatPrice } from "@/lib/format";
+import { SHIMMER } from "@/lib/shimmer";
 import ProductActiveToggle from "@/components/admin/ProductActiveToggle";
 
 export const metadata = { title: "Productos" };
@@ -41,7 +42,7 @@ export default async function ProductsPage({ searchParams }: Props) {
               <li key={p.id} className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-ink/5">
                 <Link href={`/admin/productos/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3">
                   <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-bg">
-                    {p.images[0] && <Image src={p.images[0]} alt="" fill sizes="64px" className="object-cover" />}
+                    {p.images[0] && <Image src={p.images[0]} alt="" fill sizes="64px" className="object-cover" placeholder={SHIMMER} />}
                   </div>
                   <div className="min-w-0">
                     <p className={`truncate font-bold ${p.active ? "" : "text-ink/50"}`}>{p.name}</p>
