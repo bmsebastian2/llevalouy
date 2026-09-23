@@ -42,6 +42,28 @@ body {
   background-size: 20px 10px;
 }
 
+/* Muescas laterales de ticket: círculos del color del fondo de la sección */
+.ticket-notch {
+  position: relative;
+}
+.ticket-notch::before,
+.ticket-notch::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: var(--notch, var(--bg));
+  transform: translateY(-50%);
+}
+.ticket-notch::before {
+  left: -9px;
+}
+.ticket-notch::after {
+  right: -9px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

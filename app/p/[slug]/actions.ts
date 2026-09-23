@@ -3,6 +3,7 @@
 import { getProductBySlug } from "@/lib/products";
 import { createOrder } from "@/lib/orders";
 import { validateOrder, type OrderErrors, type OrderRaw } from "@/lib/order-validation";
+import type { PaymentMethod } from "@/types/order";
 import { buildOrderMessage, getStoreWhatsapp, whatsappUrl } from "@/lib/whatsapp";
 
 export type OrderFormState = {
@@ -10,7 +11,7 @@ export type OrderFormState = {
   message?: string;
   values?: OrderRaw;
   /** Pedido guardado: el cliente abre WhatsApp con el mensaje ya escrito */
-  success?: { code: string; whatsappUrl: string };
+  success?: { code: string; whatsappUrl: string; paymentMethod: PaymentMethod };
 };
 
 const FIELDS = ["productSlug", "quantity", "name", "phone", "department", "city", "address", "paymentMethod", "notes"] as const;
@@ -24,7 +25,7 @@ export async function submitOrder(_prev: OrderFormState, formData: FormData): Pr
 
   // Honeypot: los bots completan este campo oculto; les mostramos éxito sin guardar nada.
   if (formData.get("website")) {
-    return { success: { code: "LL-0", whatsappUrl: whatsappUrl(store) } };
+    return { success: { code: "LL-0", whatsappUrl: whatsappUrl(store), paymentMethod: "cash" } };
   }
 
   const raw: OrderRaw = {};
@@ -42,7 +43,13 @@ export async function submitOrder(_prev: OrderFormState, formData: FormData): Pr
 
   try {
     const order = await createOrder(product, result.data);
-    return { success: { code: order.code, whatsappUrl: whatsappUrl(store, buildOrderMessage(order)) } };
+    return {
+      success: {
+        code: order.code,
+        whatsappUrl: whatsappUrl(store, buildOrderMessage(order)),
+        paymentMethod: order.paymentMethod,
+      },
+    };
   } catch (err) {
     console.error("[pedido] error al guardar", err);
     return { values: raw, message: "No pudimos registrar tu pedido. Probá de nuevo en un minuto." };

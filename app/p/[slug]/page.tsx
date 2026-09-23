@@ -7,7 +7,6 @@ import Benefits from "@/components/Benefits";
 import HowToBuy from "@/components/HowToBuy";
 import Reviews from "@/components/Reviews";
 import Faq from "@/components/Faq";
-import CtaButton from "@/components/CtaButton";
 import StickyCta from "@/components/StickyCta";
 import OrderForm from "@/components/OrderForm";
 import Footer from "@/components/Footer";
@@ -58,7 +57,7 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <>
-      <Header />
+      <Header cta />
       <main className="pb-24 md:pb-0">
         <ProductHero product={product} />
         <TrustBar />
@@ -67,20 +66,23 @@ export default async function ProductPage({ params }: Props) {
         <Reviews reviews={product.reviews} />
         <Faq faqs={product.faqs} />
 
-        <section className="bg-ink px-4 py-12 text-center text-white">
-          <div className="mx-auto max-w-xl">
-            <h2 className="text-3xl font-extrabold leading-tight">¿Lo querés? Llevalo hoy.</h2>
-            <p className="mt-2 text-white/75">
-              {product.name} a <strong className="text-aqua">{formatPrice(product.price)}</strong>. Pagás
-              cuando te llega.
-            </p>
-            <CtaButton className="mt-6 w-full sm:w-auto" />
+        {/* El cierre y el formulario son una sola sección: la tarjeta sube desde la franja oscura */}
+        <section id="pedido" aria-labelledby="pedido-titulo" className="scroll-mt-14">
+          <div className="bg-ink px-4 pb-28 pt-12 text-center text-white sm:pt-16">
+            <div className="mx-auto max-w-xl">
+              <p id="pedido-titulo" className="text-3xl font-extrabold leading-tight sm:text-4xl">
+                ¿Lo querés? Llevalo hoy.
+              </p>
+              <p className="mt-2 text-white/75">
+                {product.name} a <strong className="text-aqua">{formatPrice(product.price)}</strong>. Pagás
+                cuando te llega.
+              </p>
+            </div>
           </div>
-        </section>
-
-        <section id="pedido" className="scroll-mt-20 px-4 py-12">
-          <div className="mx-auto max-w-xl">
-            <OrderForm slug={product.slug} name={product.name} price={product.price} image={product.images[0]} />
+          <div className="-mt-20 px-4 pb-12">
+            <div className="mx-auto max-w-xl">
+              <OrderForm slug={product.slug} name={product.name} price={product.price} image={product.images[0]} />
+            </div>
           </div>
         </section>
       </main>

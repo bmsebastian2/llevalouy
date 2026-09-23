@@ -1,13 +1,21 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type { PaymentMethod } from "@/types/order";
 
 type Props = {
   code: string;
   whatsappUrl: string;
+  paymentMethod: PaymentMethod;
 };
 
-export default function OrderSuccess({ code, whatsappUrl }: Props) {
+const PAYMENT_NOTE: Record<PaymentMethod, string> = {
+  cash: "💵 Pagás en efectivo cuando te llega.",
+  transfer: "🏦 Por WhatsApp te pasamos los datos para transferir.",
+  mercadopago: "💳 Por WhatsApp te mandamos el link de Mercado Pago.",
+};
+
+export default function OrderSuccess({ code, whatsappUrl, paymentMethod }: Props) {
   const boxRef = useRef<HTMLDivElement>(null);
   const opened = useRef(false);
 
@@ -47,7 +55,7 @@ export default function OrderSuccess({ code, whatsappUrl }: Props) {
         </svg>
         Enviar pedido por WhatsApp
       </a>
-      <p className="mt-3 text-sm text-ink/60">💵 Pagás en efectivo cuando te llega.</p>
+      <p className="mt-3 text-sm text-ink/60">{PAYMENT_NOTE[paymentMethod]}</p>
     </div>
   );
 }
