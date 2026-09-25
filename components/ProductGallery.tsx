@@ -55,8 +55,8 @@ export default function ProductGallery({ images, alt }: Props) {
       role="region"
       aria-roledescription="carrusel"
       aria-label={alt}
-      // --slide-w: en mobile ~85% para que se asome la siguiente, sin pasar el 60% del alto de pantalla.
-      className="group @container relative [--pad:1rem] [--slide-w:min(calc(88cqw_-_1.5rem),60svh)] md:[--pad:0px] lg:[--slide-w:100cqw]"
+      // --slide-w: en mobile ~78% para que se asome la siguiente, sin pasar la mitad del alto de pantalla.
+      className="group @container relative [--pad:1rem] [--slide-w:min(calc(80cqw_-_1rem),50svh)] md:[--pad:0px] lg:[--slide-w:100cqw]"
     >
       <div className="relative">
         <div
