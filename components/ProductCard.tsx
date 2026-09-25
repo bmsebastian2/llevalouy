@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Product } from "@/types/product";
 import { discountPercent, formatPrice } from "@/lib/format";
 import { SHIMMER } from "@/lib/shimmer";
+import CardCartButton from "./CardCartButton";
 
 type Props = {
   product: Product;
@@ -42,9 +43,9 @@ export default function ProductCard({ product: p, featured = false, label, index
   const off = discountPercent(p.price, p.compareAtPrice);
 
   return (
-    <Link
-      href={`/p/${p.slug}`}
-      className={`group flex h-full flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_1px_2px_rgb(11_42_42/0.06)] ring-1 ring-ink/5 transition-[translate,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_22px_40px_-20px_rgb(11_42_42/0.4)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-aqua-dark focus-visible:ring-offset-2 focus-visible:ring-offset-bg motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
+    // Toda la tarjeta lleva al producto (el link del título se estira encima); el botón del carrito queda por arriba
+    <article
+      className={`group relative flex h-full flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_1px_2px_rgb(11_42_42/0.06)] ring-1 ring-ink/5 transition-[translate,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_22px_40px_-20px_rgb(11_42_42/0.4)] has-[a:focus-visible]:ring-4 has-[a:focus-visible]:ring-aqua-dark has-[a:focus-visible]:ring-offset-2 has-[a:focus-visible]:ring-offset-bg motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
         featured ? "sm:grid sm:grid-cols-2" : ""
       }`}
     >
@@ -97,7 +98,9 @@ export default function ProductCard({ product: p, featured = false, label, index
             featured ? "text-2xl font-extrabold leading-tight sm:text-3xl" : "text-lg font-bold leading-snug"
           }`}
         >
-          {p.name}
+          <Link href={`/p/${p.slug}`} className="outline-none after:absolute after:inset-0 after:content-['']">
+            {p.name}
+          </Link>
         </h2>
         {featured && p.tagline && <p className="mt-1.5 line-clamp-2 text-ink/70">{p.tagline}</p>}
 
@@ -121,20 +124,21 @@ export default function ProductCard({ product: p, featured = false, label, index
         </p>
 
         {/* CTA visual: el link es toda la card */}
-        <span className="mt-auto pt-4">
-          <span className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-aqua text-base font-extrabold text-ink transition-colors duration-200 group-hover:bg-[#27b5a8] motion-reduce:transition-none">
+        <div className="mt-auto flex gap-2 pt-4">
+          <span className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-aqua text-base font-extrabold text-ink transition-colors duration-200 group-hover:bg-[#27b5a8] motion-reduce:transition-none">
             Llevalo
             <span aria-hidden="true" className="relative grid size-6 place-items-center">
-              <span className="transition duration-200 group-hover:translate-x-1 group-hover:opacity-0 group-focus-visible:opacity-0 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0">
+              <span className="transition duration-200 group-hover:translate-x-1 group-hover:opacity-0 group-has-[a:focus-visible]:opacity-0 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0">
                 →
               </span>
-              <span className="absolute inset-0 grid scale-50 place-items-center rounded-full bg-ink text-aqua opacity-0 transition duration-200 group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100 motion-reduce:transition-none">
+              <span className="absolute inset-0 grid scale-50 place-items-center rounded-full bg-ink text-aqua opacity-0 transition duration-200 group-hover:scale-100 group-hover:opacity-100 group-has-[a:focus-visible]:scale-100 group-has-[a:focus-visible]:opacity-100 motion-reduce:transition-none">
                 <Check className="size-4" />
               </span>
             </span>
           </span>
-        </span>
+          <CardCartButton slug={p.slug} name={p.name} />
+        </div>
       </div>
-    </Link>
+    </article>
   );
 }

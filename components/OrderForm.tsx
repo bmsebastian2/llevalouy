@@ -1,13 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { useActionState, useState } from "react";
+import Link from "next/link";
+import { useActionState, useEffect, useState } from "react";
 import { submitOrder, type OrderFormState } from "@/app/p/[slug]/actions";
 import { formatPrice } from "@/lib/format";
 import { SHIMMER } from "@/lib/shimmer";
 import OrderSuccess from "./OrderSuccess";
 import { DEPARTMENTS, MAX_QUANTITY, PAYMENT_METHODS, PAYMENT_METHOD_LABEL, type PaymentMethod } from "@/types/order";
 import { parseItems, type OrderField } from "@/lib/order-validation";
+import { cart, useCart, useCartReady } from "@/lib/cart";
+import { CartIcon } from "./CartButton";
 
 export type OrderProduct = {
   slug: string;
@@ -17,10 +20,10 @@ export type OrderProduct = {
 };
 
 type Props = {
-  /** El producto de la página: siempre va en el pedido */
-  product: OrderProduct;
-  /** Otros productos que se pueden sumar al mismo envío */
-  extras: OrderProduct[];
+  /** El producto de la página: siempre va en el pedido. Sin él (página del carrito) el pedido es el carrito. */
+  product?: OrderProduct;
+  /** Productos activos: resuelven el carrito y se ofrecen en "Sumar otro producto" */
+  catalog: OrderProduct[];
 };
 
 type Line = { product: OrderProduct; quantity: number };
@@ -49,22 +52,40 @@ const inputClass =
 
 const labelClass = "text-sm font-bold";
 
-export default function OrderForm({ product, extras }: Props) {
+export default function OrderForm({ product, catalog }: Props) {
   const [state, formAction, pending] = useActionState(submitOrder, initialState);
   const v = state.values ?? {};
 
-  // Líneas del pedido: la primera es el producto de la página y no se puede quitar.
-  // Si el servidor devolvió errores, se rearman con lo que la persona había elegido.
-  const [lines, setLines] = useState<Line[]>(() => {
-    const saved = parseItems(v.items) ?? [];
-    const mainQty = saved.find((it) => it.productSlug === product.slug)?.quantity ?? 1;
-    const added = saved.flatMap(({ productSlug, quantity }) => {
-      const p = extras.find((e) => e.slug === productSlug);
-      return p ? [{ product: p, quantity }] : [];
-    });
-    return [{ product, quantity: mainQty }, ...added];
-  });
+  const cartItems = useCart();
+  const cartReady = useCartReady();
+  // Cantidad del producto de la página mientras no esté en el carrito
+  const [mainQty, setMainQty] = useState(
+    () => parseItems(v.items)?.find((it) => it.productSlug === product?.slug)?.quantity ?? 1,
+  );
+  const [showExtras, setShowExtras] = useState(false);
   const [announce, setAnnounce] = useState("");
+
+  // Líneas del pedido: el producto de la página (fijo) + lo que haya en el carrito
+  const cartLines = cartItems.flatMap((it) => {
+    const p = catalog.find((c) => c.slug === it.slug);
+    return p ? [{ product: p, quantity: it.quantity }] : [];
+  });
+  const mainInCart = product ? cartLines.find((l) => l.product.slug === product.slug) : undefined;
+  const lines: Line[] = product
+    ? [{ product, quantity: mainInCart?.quantity ?? mainQty }, ...cartLines.filter((l) => l !== mainInCart)]
+    : cartLines;
+  const extras = catalog.filter((p) => p.slug !== product?.slug);
+
+  // Productos que se dejaron de vender salen del carrito
+  useEffect(() => {
+    if (cartReady) cart.keepOnly(catalog.map((p) => p.slug));
+  }, [cartReady, catalog]);
+
+  // Pedido guardado: el carrito ya se pidió entero
+  useEffect(() => {
+    if (state.success) cart.clear();
+  }, [state.success]);
+
   const [payment, setPayment] = useState<PaymentMethod>(() =>
     PAYMENT_METHODS.includes(state.values?.paymentMethod as PaymentMethod)
       ? (state.values?.paymentMethod as PaymentMethod)
@@ -96,17 +117,18 @@ export default function OrderForm({ product, extras }: Props) {
   const inOrder = (slug: string) => lines.some((l) => l.product.slug === slug);
 
   function setQuantity(slug: string, quantity: number) {
-    setLines((ls) => ls.map((l) => (l.product.slug === slug ? { ...l, quantity } : l)));
+    if (slug === product?.slug && !mainInCart) setMainQty(quantity);
+    else cart.set(slug, quantity);
   }
 
   function addExtra(p: OrderProduct) {
     if (inOrder(p.slug)) return;
-    setLines((ls) => [...ls, { product: p, quantity: 1 }]);
-    setAnnounce(`${p.name} agregado a tu pedido.`);
+    if (cart.add(p.slug)) setAnnounce(`${p.name} agregado a tu pedido.`);
+    else setAnnounce(`Llegaste al máximo de productos por pedido.`);
   }
 
-  function removeExtra(p: OrderProduct) {
-    setLines((ls) => ls.filter((l) => l.product.slug !== p.slug));
+  function removeLine(p: OrderProduct) {
+    cart.remove(p.slug);
     setAnnounce(`${p.name} quitado de tu pedido.`);
   }
 
@@ -145,6 +167,12 @@ export default function OrderForm({ product, extras }: Props) {
 
   if (state.success) return <OrderSuccess {...state.success} />;
 
+  // Página del carrito: esperar a leerlo antes de decir que está vacío
+  if (!product && !cartReady) {
+    return <div className="h-96 animate-pulse rounded-3xl bg-white/70 motion-reduce:animate-none" aria-hidden />;
+  }
+  if (!product && lines.length === 0) return <EmptyCart />;
+
   const destination = filled(fields.city) ? `${fields.city.trim()}, ${fields.department}` : fields.department;
 
   return (
@@ -182,25 +210,36 @@ export default function OrderForm({ product, extras }: Props) {
               <ItemRow
                 key={l.product.slug}
                 line={l}
-                removable={i > 0}
+                removable={!product || i > 0}
                 onQuantity={(q) => setQuantity(l.product.slug, q)}
-                onRemove={() => removeExtra(l.product)}
+                onRemove={() => removeLine(l.product)}
               />
             ))}
           </ul>
           {fieldError("items")}
 
           {extras.length > 0 && (
-            <div className="mt-5">
-              <p className="text-sm font-bold">
-                ¿Sumás algo más? <span className="font-normal text-ink/55">Va en el mismo envío.</span>
-              </p>
-              <ul className="no-scrollbar mt-2 flex snap-x gap-2.5 overflow-x-auto pb-1" aria-label="Otros productos">
-                {extras.map((p) => (
-                  <ExtraCard key={p.slug} product={p} added={inOrder(p.slug)} onAdd={() => addExtra(p)} />
-                ))}
-              </ul>
-            </div>
+            <>
+              <button
+                type="button"
+                onClick={() => setShowExtras((o) => !o)}
+                aria-expanded={showExtras}
+                aria-controls="sumar-productos"
+                className="mt-3 rounded-lg text-sm font-bold text-aqua-dark underline decoration-aqua decoration-2 underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-aqua/60"
+              >
+                {showExtras ? "Ocultar otros productos" : "+ Sumar otro producto"}
+              </button>
+              {showExtras && (
+                <div id="sumar-productos" className="item-in mt-3">
+                  <p className="text-sm text-ink/55">Van en el mismo envío.</p>
+                  <ul className="no-scrollbar mt-2 flex snap-x gap-2.5 overflow-x-auto pb-1" aria-label="Otros productos">
+                    {extras.map((p) => (
+                      <ExtraCard key={p.slug} product={p} added={inOrder(p.slug)} onAdd={() => addExtra(p)} />
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
           )}
           <p className="sr-only" aria-live="polite">
             {announce}
@@ -474,6 +513,22 @@ function Step({
         <div className="mt-3">{children}</div>
       </div>
     </li>
+  );
+}
+
+function EmptyCart() {
+  return (
+    <div className="rounded-3xl bg-white px-6 py-12 text-center shadow-sm ring-1 ring-ink/5">
+      <CartIcon className="mx-auto size-14 text-aqua-dark" />
+      <h2 className="mt-4 text-2xl font-extrabold">Tu carrito está vacío</h2>
+      <p className="mx-auto mt-2 max-w-xs text-ink/70">Sumá productos y los pedís todos juntos, en un solo envío.</p>
+      <Link
+        href="/"
+        className="mt-6 inline-flex h-12 items-center gap-2 rounded-2xl bg-aqua px-6 font-extrabold text-ink shadow-[0_4px_0_0_var(--aqua-dark)] transition active:translate-y-1 active:shadow-[0_1px_0_0_var(--aqua-dark)]"
+      >
+        Ver productos <span aria-hidden>→</span>
+      </Link>
+    </div>
   );
 }
 

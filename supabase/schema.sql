@@ -67,7 +67,7 @@ create index if not exists orders_phone_idx on public.orders (phone);
 create table if not exists public.order_items (
   id            uuid primary key default gen_random_uuid(),
   order_id      uuid not null references public.orders(id) on delete cascade,
-  line          smallint not null default 0,                      -- orden en el pedido; 0 = el de la página
+  line          smallint not null default 0,                      -- orden en el pedido
   product_id    uuid not null references public.products(id),
   product_slug  text not null,
   product_name  text not null,                                    -- copia al momento de la compra

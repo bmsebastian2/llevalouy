@@ -57,7 +57,6 @@ export default async function ProductPage({ params }: Props) {
   if (!product) notFound();
 
   const toOrderProduct = (p: Product): OrderProduct => ({ slug: p.slug, name: p.name, price: p.price, image: p.images[0] });
-  const extras = catalog.filter((p) => p.slug !== product.slug).map(toOrderProduct);
 
   return (
     <>
@@ -85,7 +84,7 @@ export default async function ProductPage({ params }: Props) {
           </div>
           <div className="-mt-20 px-4 pb-12">
             <div className="mx-auto max-w-xl">
-              <OrderForm product={toOrderProduct(product)} extras={extras} />
+              <OrderForm product={toOrderProduct(product)} catalog={catalog.map(toOrderProduct)} />
             </div>
           </div>
         </section>

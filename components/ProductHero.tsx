@@ -2,6 +2,7 @@ import type { Product } from "@/types/product";
 import { discountPercent, formatPrice } from "@/lib/format";
 import ProductGallery from "./ProductGallery";
 import CtaButton from "./CtaButton";
+import AddToCartButton from "./AddToCartButton";
 
 export default function ProductHero({ product }: { product: Product }) {
   const off = discountPercent(product.price, product.compareAtPrice);
@@ -49,6 +50,7 @@ export default function ProductHero({ product }: { product: Product }) {
         </div>
 
         <CtaButton className="mt-5 w-full" />
+        <AddToCartButton slug={product.slug} className="mt-3" />
         <p className="mt-3 text-center text-sm text-ink/60">💵 No pagás nada ahora · Pagás al recibir</p>
       </div>
     </section>
