@@ -25,14 +25,15 @@ export default function Benefits({ benefits, description, media = [] }: Props) {
 
   return (
     <section className="mx-auto max-w-5xl px-4 py-12">
-      <h2 className="text-2xl font-extrabold sm:text-3xl">Por qué te va a encantar</h2>
-      {description && <p className="mt-3 max-w-2xl text-ink/75">{description}</p>}
+      <h2 className="display text-[1.75rem] font-extrabold leading-tight sm:text-4xl">Por qué te va a servir</h2>
+      {description && <p className="mt-3 max-w-2xl text-lg text-ink/75">{description}</p>}
       {/* grid-flow-dense: en 2 o 3 columnas los beneficios rellenan el hueco que deja un medio a ancho completo. */}
-      <ul className={`mt-6 grid grid-flow-dense gap-3 ${cols}`}>
+      <ul className={`mt-6 grid grid-flow-dense gap-x-8 ${cols}`}>
         {benefits.map((b, i) => (
           <Fragment key={b.text}>
-            <li className="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-ink/5">
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-aqua/15 text-2xl" aria-hidden>
+            {/* Lista con separadores finos, sin tarjetas */}
+            <li className="flex items-center gap-4 border-t border-espuma py-4">
+              <span className="w-8 shrink-0 text-center text-2xl" aria-hidden>
                 {b.icon}
               </span>
               <span className="font-medium leading-snug">{b.text}</span>

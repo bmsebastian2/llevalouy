@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const product = await getProductBySlug(slug);
   if (!product) return { title: "Producto no encontrado" };
 
-  const description = `${product.tagline} ${formatPrice(product.price)} · Pagás al recibir.`;
+  const description = `${product.tagline} ${formatPrice(product.price)}. Pagás al recibir.`;
   const image = product.images[0];
 
   return {
@@ -74,7 +74,7 @@ export default async function ProductPage({ params }: Props) {
           <div className="bg-ink px-4 pb-28 pt-12 text-center text-white sm:pt-16">
             <div className="mx-auto max-w-xl">
               <p id="pedido-titulo" className="text-3xl font-extrabold leading-tight sm:text-4xl">
-                ¿Lo querés? Llevalo hoy.
+                ¿Lo querés? Te lo llevamos.
               </p>
               <p className="mt-2 text-white/75">
                 {product.name} a <strong className="text-aqua">{formatPrice(product.price)}</strong>. Pagás

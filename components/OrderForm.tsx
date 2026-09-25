@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { submitOrder, type OrderFormState } from "@/app/p/[slug]/actions";
 import { formatPrice } from "@/lib/format";
 import { SHIMMER } from "@/lib/shimmer";
@@ -11,6 +11,7 @@ import { DEPARTMENTS, MAX_QUANTITY, PAYMENT_METHODS, PAYMENT_METHOD_LABEL, type 
 import { parseItems, type OrderField } from "@/lib/order-validation";
 import { cart, useCart, useCartReady } from "@/lib/cart";
 import { CartIcon } from "./CartButton";
+import { BARRIO_EVENT, readBarrio } from "@/lib/delivery";
 
 export type OrderProduct = {
   slug: string;
@@ -99,6 +100,24 @@ export default function OrderForm({ product, catalog }: Props) {
     address: v.address ?? "",
   }));
   const [showNotes, setShowNotes] = useState(() => Boolean(v.notes || state.errors?.notes));
+
+  // Barrio elegido en "¿Llega hoy a tu barrio?": precarga el campo mientras la persona no haya escrito otro
+  const cityRef = useRef<HTMLInputElement>(null);
+  const autoCity = useRef("");
+  useEffect(() => {
+    function applySavedBarrio() {
+      const saved = readBarrio();
+      const input = cityRef.current;
+      if (!saved || saved.kind === "interior" || !input) return;
+      if (input.value.trim() && input.value !== autoCity.current) return;
+      input.value = saved.name;
+      autoCity.current = saved.name;
+      setFields((f) => ({ ...f, city: saved.name }));
+    }
+    applySavedBarrio();
+    window.addEventListener(BARRIO_EVENT, applySavedBarrio);
+    return () => window.removeEventListener(BARRIO_EVENT, applySavedBarrio);
+  }, []);
 
   const err = (f: OrderField) => state.errors?.[f];
   const errProps = (f: OrderField) =>
@@ -317,6 +336,7 @@ export default function OrderForm({ product, catalog }: Props) {
               <label className="block">
                 <span className={labelClass}>Barrio o ciudad</span>
                 <input
+                  ref={cityRef}
                   name="city"
                   type="text"
                   autoComplete="address-level2"
@@ -454,7 +474,7 @@ export default function OrderForm({ product, catalog }: Props) {
             </>
           ) : (
             <>
-              Confirmar por WhatsApp <span aria-hidden>→</span>
+              Confirmar pedido
             </>
           )}
         </button>
@@ -526,7 +546,7 @@ function EmptyCart() {
         href="/"
         className="mt-6 inline-flex h-12 items-center gap-2 rounded-2xl bg-aqua px-6 font-extrabold text-ink shadow-[0_4px_0_0_var(--aqua-dark)] transition active:translate-y-1 active:shadow-[0_1px_0_0_var(--aqua-dark)]"
       >
-        Ver productos <span aria-hidden>→</span>
+        Ver productos
       </Link>
     </div>
   );

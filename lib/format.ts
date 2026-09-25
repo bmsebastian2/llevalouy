@@ -1,11 +1,9 @@
-const uyu = new Intl.NumberFormat("es-UY", {
-  style: "currency",
-  currency: "UYU",
-  maximumFractionDigits: 0,
-});
+// es-UY con style "currency" muestra "$"; acá se usa "$U", como en los comercios de Uruguay.
+const uyu = new Intl.NumberFormat("es-UY", { maximumFractionDigits: 0 });
 
+/** 1290 → "$U 1.290" */
 export function formatPrice(value: number): string {
-  return uyu.format(value);
+  return `$U ${uyu.format(value)}`;
 }
 
 export function discountPercent(price: number, compareAtPrice?: number): number | null {

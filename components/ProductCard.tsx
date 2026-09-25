@@ -45,8 +45,9 @@ export default function ProductCard({ product: p, featured = false, label, index
   return (
     // Toda la tarjeta lleva al producto (el link del título se estira encima); el botón del carrito queda por arriba
     <article
-      className={`group relative flex h-full flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_1px_2px_rgb(11_42_42/0.06)] ring-1 ring-ink/5 transition-[translate,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_22px_40px_-20px_rgb(11_42_42/0.4)] has-[a:focus-visible]:ring-4 has-[a:focus-visible]:ring-aqua-dark has-[a:focus-visible]:ring-offset-2 has-[a:focus-visible]:ring-offset-bg motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
-        featured ? "sm:grid sm:grid-cols-2" : ""
+      className={`group relative flex h-full flex-col overflow-hidden rounded-[28px] bg-white ring-1 ring-espuma transition-[translate,box-shadow] duration-300 ease-out hover:-translate-y-1 has-[a:focus-visible]:ring-4 has-[a:focus-visible]:ring-aqua-dark has-[a:focus-visible]:ring-offset-2 has-[a:focus-visible]:ring-offset-bg motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
+        // Solo el destacado lleva sombra: las demás tarjetas quedan planas
+        featured ? "shadow-[0_22px_40px_-24px_rgb(11_42_42/0.35)] sm:grid sm:grid-cols-2" : ""
       }`}
     >
       {/* Escenario de la foto: fondo aqua suave + bolsa detrás del producto */}
@@ -82,14 +83,6 @@ export default function ProductCard({ product: p, featured = false, label, index
           </span>
         )}
 
-        {off && (
-          <span className="absolute right-3 top-3 grid size-16 -rotate-[8deg] place-items-center rounded-full bg-aqua-dark text-lg font-extrabold leading-none tracking-tight text-white shadow-[0_6px_14px_-6px_rgb(11_42_42/0.5)]">
-            {/* Borde punteado de etiqueta de precio */}
-            <span aria-hidden="true" className="absolute inset-1 rounded-full border-2 border-dashed border-white/35" />
-            <span aria-hidden="true">-{off}%</span>
-            <span className="sr-only">{off}% de descuento</span>
-          </span>
-        )}
       </div>
 
       <div className={`flex flex-1 flex-col p-4 ${featured ? "sm:justify-center sm:p-7" : "sm:p-5"}`}>
@@ -118,23 +111,12 @@ export default function ProductCard({ product: p, featured = false, label, index
           )}
         </p>
 
-        <p className="mt-2 text-xs text-ink/70">
-          <span aria-hidden="true">🚚</span> Envío en el día <span aria-hidden="true">·</span>{" "}
-          <span aria-hidden="true">💵</span> Pagás al recibir
-        </p>
+        <p className="mt-2 text-sm text-ink/70">Envío en el día en Montevideo. Pagás al recibir.</p>
 
         {/* CTA visual: el link es toda la card */}
         <div className="mt-auto flex gap-2 pt-4">
           <span className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-aqua text-base font-extrabold text-ink transition-colors duration-200 group-hover:bg-[#27b5a8] motion-reduce:transition-none">
-            Llevalo
-            <span aria-hidden="true" className="relative grid size-6 place-items-center">
-              <span className="transition duration-200 group-hover:translate-x-1 group-hover:opacity-0 group-has-[a:focus-visible]:opacity-0 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0">
-                →
-              </span>
-              <span className="absolute inset-0 grid scale-50 place-items-center rounded-full bg-ink text-aqua opacity-0 transition duration-200 group-hover:scale-100 group-hover:opacity-100 group-has-[a:focus-visible]:scale-100 group-has-[a:focus-visible]:opacity-100 motion-reduce:transition-none">
-                <Check className="size-4" />
-              </span>
-            </span>
+            Ver producto
           </span>
           <CardCartButton slug={p.slug} name={p.name} />
         </div>

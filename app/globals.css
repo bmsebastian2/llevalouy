@@ -6,6 +6,8 @@
   --ink: #0b2a2a;
   --bg: #eef8f6;
   --white: #ffffff;
+  /* Bordes y separadores finos, derivado del aqua */
+  --espuma: #cfe6e1;
 }
 
 @theme inline {
@@ -14,6 +16,7 @@
   --color-ink: var(--ink);
   --color-bg: var(--bg);
   --color-white: var(--white);
+  --color-espuma: var(--espuma);
   --font-sans: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -75,8 +78,66 @@ body {
   animation: item-in 0.25s ease-out;
 }
 
+/* Títulos display: Bricolage un poco angosta */
+.display {
+  font-stretch: 90%;
+}
+
+/* Sin scroll de fondo con el selector de barrio abierto */
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+dialog::backdrop {
+  background: rgb(11 42 42 / 0.45);
+}
+
+/*
+  El único momento orquestado: la respuesta del barrio.
+  La palabra se abre de angosta y liviana a ancha y pesada, el resaltado aqua se pinta detrás
+  y después aparece la frase.
+*/
+@keyframes answer-open {
+  from {
+    font-stretch: 75%;
+    font-weight: 400;
+    opacity: 0.2;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+@keyframes answer-mark {
+  from {
+    background-size: 0% 100%;
+  }
+}
+@keyframes answer-line {
+  from {
+    opacity: 0;
+  }
+}
+.answer-word {
+  font-stretch: 100%;
+}
+.answer-mark {
+  background: linear-gradient(transparent 58%, var(--aqua) 58%, var(--aqua) 92%, transparent 92%) no-repeat left / 100% 100%;
+  box-decoration-break: clone;
+}
+.answer-animate .answer-word {
+  animation: answer-open 0.38s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.answer-animate .answer-mark {
+  animation: answer-mark 0.3s 0.2s ease-out both;
+}
+.answer-animate .answer-line {
+  animation: answer-line 0.25s 0.12s ease-out both;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .item-in {
+  .item-in,
+  .answer-animate .answer-word,
+  .answer-animate .answer-mark,
+  .answer-animate .answer-line {
     animation: none;
   }
 

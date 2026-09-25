@@ -1,82 +1,88 @@
 import Image from "next/image";
 import { site } from "@/lib/site";
+import { getStoreWhatsapp, whatsappUrl } from "@/lib/whatsapp";
+import RamblaLine from "./RamblaLine";
 
-type FooterLink = { href: string; label: string; icon?: React.ReactNode };
+type FooterLink = { href: string; label: string };
 
-const iconProps = {
-  width: 16,
-  height: 16,
-  viewBox: "0 0 24 24",
-  fill: "none",
-  stroke: "currentColor",
-  strokeWidth: 1.75,
-  strokeLinecap: "round",
-  strokeLinejoin: "round",
-  "aria-hidden": true,
-} as const;
+/** 59899123456 → "+598 99 123 456" */
+function formatWhatsapp(digits: string) {
+  const local = digits.replace(/^598/, "");
+  return `+598 ${local.slice(0, 2)} ${local.slice(2, 5)} ${local.slice(5)}`;
+}
 
-const InstagramIcon = (
-  <svg {...iconProps}>
-    <rect x="3" y="3" width="18" height="18" rx="5" />
-    <circle cx="12" cy="12" r="4" />
-    <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" />
-  </svg>
-);
-
-const MailIcon = (
-  <svg {...iconProps}>
-    <rect x="3" y="5" width="18" height="14" rx="2" />
-    <path d="m3 7 9 6 9-6" />
-  </svg>
-);
+const rowClass =
+  "flex min-h-12 flex-col justify-center rounded-lg py-1 outline-none focus-visible:ring-4 focus-visible:ring-aqua-dark/40";
 
 // Envíos y preguntas frecuentes solo existen en la página de producto: ahí se pasan como `pageLinks`.
 export default function Footer({ pageLinks = [] }: { pageLinks?: FooterLink[] }) {
-  const links: (FooterLink & { external?: boolean })[] = [
-    { href: `https://instagram.com/${site.instagram}`, label: "Instagram", icon: InstagramIcon, external: true },
-    { href: `mailto:${site.email}`, label: "Contacto", icon: MailIcon },
-    ...pageLinks,
+  const whatsapp = getStoreWhatsapp();
+
+  const contact = [
+    ...(whatsapp
+      ? [{ label: "WhatsApp", value: formatWhatsapp(whatsapp), href: whatsappUrl(whatsapp), external: true }]
+      : []),
+    { label: "Horario de atención", value: site.hours },
+    { label: "Instagram", value: `@${site.instagram}`, href: `https://instagram.com/${site.instagram}`, external: true },
+    { label: "Email", value: site.email, href: `mailto:${site.email}` },
   ];
 
   return (
-    <footer className="bg-ink px-4 pb-8 pt-12 text-white/80">
+    <footer className="px-4 pb-10 pt-12">
       <div className="mx-auto max-w-5xl">
-        <div className="flex flex-col items-center gap-6 text-center md:flex-row md:items-end md:justify-between md:text-left">
+        <RamblaLine />
+
+        <div className="mt-8 grid gap-8 md:grid-cols-[1fr_auto] md:gap-16">
           <div>
-            <div className="inline-block rounded-xl bg-white px-3 py-2">
-              <Image src="/brand/logo-horizontal.svg" alt="Llevalo UY" width={116} height={30} />
-            </div>
-            <p className="mt-4 max-w-xs text-lg font-bold leading-snug text-white">
-              Comprá fácil. Recibí en tu casa. <span className="text-aqua">Pagá al recibir.</span>
-            </p>
+            <Image src="/brand/logo-horizontal.svg" alt="Llevalo UY" width={124} height={32} />
+            <h2 className="display mt-6 text-3xl font-extrabold leading-tight sm:text-4xl">Somos de Montevideo</h2>
+            <p className="mt-2 text-lg text-ink/75">Te atiende una persona, no un bot.</p>
           </div>
 
-          <nav aria-label="Pie de página">
-            <ul className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm md:justify-end">
-              {links.map((l, i) => (
-                <li key={l.label} className="flex items-center gap-3">
-                  {i > 0 && (
-                    <span className="text-white/30" aria-hidden>
-                      ·
-                    </span>
-                  )}
+          <ul className="grid gap-x-10 gap-y-1 sm:grid-cols-2 md:min-w-[26rem]">
+            {contact.map((c) => (
+              <li key={c.label}>
+                {c.href ? (
                   <a
-                    href={l.href}
-                    {...(l.external && { target: "_blank", rel: "noopener noreferrer" })}
-                    className="inline-flex items-center gap-1.5 transition hover:text-aqua"
+                    href={c.href}
+                    {...(c.external && { target: "_blank", rel: "noopener noreferrer" })}
+                    className={`${rowClass} group`}
                   >
-                    {l.icon}
-                    {l.label}
+                    <span className="text-sm text-ink/65">{c.label}</span>
+                    <span className="break-all font-bold underline decoration-espuma decoration-2 underline-offset-4 group-hover:decoration-aqua-dark">
+                      {c.value}
+                    </span>
                   </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
+                ) : (
+                  <p className={rowClass}>
+                    <span className="text-sm text-ink/65">{c.label}</span>
+                    <span className="font-bold">{c.value}</span>
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
         </div>
 
-        <p className="mt-10 border-t border-white/10 pt-6 text-center text-xs text-white/50 md:text-left">
-          © {new Date().getFullYear()} Llevalo Uruguay
-        </p>
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-espuma pt-4 text-sm text-ink/65">
+          <p>© {new Date().getFullYear()} Llevalo UY</p>
+          {pageLinks.length > 0 && (
+            <nav aria-label="Pie de página">
+              <ul className="flex flex-wrap gap-x-5">
+                {pageLinks.map((l) => (
+                  <li key={l.href}>
+                    <a
+                      href={l.href}
+                      className="inline-flex min-h-12 items-center underline-offset-4 outline-none hover:text-ink hover:underline focus-visible:ring-4 focus-visible:ring-aqua-dark/40"
+                    >
+                      {l.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
+        </div>
       </div>
     </footer>
   );

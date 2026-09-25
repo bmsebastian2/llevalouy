@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
+import BarrioNote from "@/components/BarrioNote";
 import { getActiveProducts } from "@/lib/products";
 import { site } from "@/lib/site";
 
@@ -13,14 +14,13 @@ export default async function HomePage() {
     <>
       <Header />
       <main className="mx-auto max-w-5xl px-4 py-8 sm:py-10">
-        <h1 className="max-w-xl text-balance text-[2rem] font-extrabold leading-[1.05] tracking-tight sm:text-5xl">
-          Hallazgos que te hacen la vida{" "}
-          {/* Subrayado grueso tipo marcador: el aqua va de fondo, nunca como color de texto */}
-          <span className="bg-[linear-gradient(transparent_60%,var(--aqua)_60%,var(--aqua)_88%,transparent_88%)] box-decoration-clone">
-            más fácil
-          </span>
+        <h1 className="display max-w-xl text-balance text-[2.25rem] font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
+          Cosas útiles para la casa, en el día.
         </h1>
-        <p className="mt-3 text-ink/70">Cosas simples que resuelven problemas de todos los días.</p>
+        <p className="mt-3 max-w-lg text-lg text-ink/75">
+          Somos de Montevideo. Pedís, te lo llevamos y pagás cuando te llega.
+        </p>
+        <BarrioNote className="mt-3" />
 
         {products.length > 0 ? (
           <ul className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">

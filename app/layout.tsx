@@ -5,7 +5,8 @@ import "./globals.css";
 
 const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
-  weight: ["400", "500", "700", "800"],
+  // Variable: ancho (wdth) y tamaño óptico (opsz) dan las voces de display y de respuesta sin otra familia
+  axes: ["opsz", "wdth"],
   variable: "--font-bricolage",
   display: "swap",
 });
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
     default: "Llevalo UY — Pagás al recibir",
     template: "%s | Llevalo UY",
   },
-  description: "Productos que te resuelven la vida. Envío en el día y pagás al recibir en todo Uruguay.",
+  description: "Cosas útiles para la casa. Somos de Montevideo: te lo llevamos en el día y pagás al recibir.",
   icons: {
     icon: "/brand/favicon-512.png",
     apple: "/brand/favicon-512.png",

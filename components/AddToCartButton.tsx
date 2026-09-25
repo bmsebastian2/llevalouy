@@ -17,13 +17,13 @@ export default function AddToCartButton({ slug, className = "" }: { slug: string
           <svg viewBox="0 0 16 16" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
             <path d="m3.5 8.5 3 3 6-7" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          En tu carrito{inCart.quantity > 1 ? ` · ${inCart.quantity}` : ""}
+          En tu carrito{inCart.quantity > 1 ? ` (${inCart.quantity})` : ""}
         </span>
         <Link
           href="/carrito"
           className="flex h-12 items-center gap-1.5 rounded-2xl bg-ink px-5 font-extrabold text-white outline-none transition focus-visible:ring-2 focus-visible:ring-aqua active:scale-[0.98]"
         >
-          Ver carrito <span aria-hidden>→</span>
+          Ver carrito
         </Link>
       </div>
     );

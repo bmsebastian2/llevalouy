@@ -26,10 +26,10 @@ export default function StickyCta({ price }: { price: number }) {
       <a
         href={site.orderAnchor}
         tabIndex={hidden ? -1 : 0}
-        className="flex h-14 w-full items-center justify-between rounded-2xl bg-aqua px-5 text-lg font-extrabold text-ink active:scale-[0.99]"
+        className="flex h-14 w-full items-center justify-between rounded-2xl bg-aqua px-5 text-lg font-extrabold text-ink outline-none focus-visible:ring-4 focus-visible:ring-aqua-dark/40 active:scale-[0.99]"
       >
         <span>Pedilo ahora</span>
-        <span>{formatPrice(price)} →</span>
+        <span className="tabular-nums">{formatPrice(price)}</span>
       </a>
     </div>
   );
