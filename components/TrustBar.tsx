@@ -44,7 +44,7 @@ const items = [
 
 export default function TrustBar() {
   return (
-    <section aria-label="Cómo te cuidamos la compra" className="mx-auto max-w-5xl px-4 pb-4 pt-10 md:pt-6">
+    <section aria-label="Cómo te cuidamos la compra" className="page-container pb-4 pt-10 md:pt-6">
       <ul className="grid gap-4 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-espuma">
         {items.map((it) => (
           <li key={it.text} className="flex items-center gap-3 font-medium leading-snug sm:px-5 sm:first:pl-0">

@@ -71,7 +71,7 @@ export default async function ProductPage({ params }: Props) {
 
         {/* El cierre y el formulario son una sola sección: la tarjeta sube desde la franja oscura */}
         <section id="pedido" aria-labelledby="pedido-titulo" className="scroll-mt-14">
-          <div className="bg-ink px-4 pb-28 pt-12 text-center text-white sm:pt-16">
+          <div className="bg-ink px-4 pb-28 pt-12 text-center text-white sm:px-6 sm:pt-16">
             <div className="mx-auto max-w-xl">
               <p id="pedido-titulo" className="text-3xl font-extrabold leading-tight sm:text-4xl">
                 ¿Lo querés? Te lo llevamos.
@@ -82,7 +82,7 @@ export default async function ProductPage({ params }: Props) {
               </p>
             </div>
           </div>
-          <div className="-mt-20 px-4 pb-12">
+          <div className="-mt-20 px-4 pb-12 sm:px-6">
             <div className="mx-auto max-w-xl">
               <OrderForm product={toOrderProduct(product)} catalog={catalog.map(toOrderProduct)} />
             </div>

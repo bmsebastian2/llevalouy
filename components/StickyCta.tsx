@@ -34,7 +34,7 @@ export default function StickyCta({ price }: { price: number }) {
   // Sin animación: aparece y desaparece en seco (el único movimiento de la página es la hoja de barrios)
   return (
     <div
-      className={`fixed inset-x-0 bottom-0 z-40 border-t border-espuma bg-white px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 md:hidden ${
+      className={`fixed inset-x-0 bottom-0 z-40 border-t border-espuma bg-white px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6 pt-3 md:hidden ${
         shown ? "" : "invisible"
       }`}
       aria-hidden={!shown}

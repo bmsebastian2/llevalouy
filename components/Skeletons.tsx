@@ -7,24 +7,38 @@ export function Bone({ className = "" }: { className?: string }) {
 
 function HeaderSkeleton() {
   return (
-    <div className="sticky top-0 z-30 border-b border-ink/5 bg-bg/90">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-center px-4 md:justify-start">
-        <Bone className="h-9 w-[139px]" />
+    <div className="sticky top-0 z-30 border-b border-espuma bg-white">
+      <div className="page-container flex h-14 items-center justify-between">
+        <Bone className="h-8 w-[124px]" />
+        <Bone className="size-12 rounded-xl min-[400px]:w-32" />
       </div>
     </div>
   );
 }
 
+/** Recuadro de entrega y pago (DeliveryPromise) */
+function PromiseSkeleton({ className = "" }: { className?: string }) {
+  return (
+    <div className={`rounded-2xl bg-white p-4 ring-1 ring-espuma ${className}`}>
+      <Bone className="h-5 w-11/12" />
+      <Bone className="mt-2 h-5 w-1/2" />
+      <Bone className="mt-5 h-5 w-40" />
+    </div>
+  );
+}
+
+/** Card horizontal en celular, vertical desde tablet (como ProductCard) */
 export function ProductCardSkeleton() {
   return (
-    <li className="flex">
-      <div className="flex w-full flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-ink/5">
+    <li>
+      <div className="grid grid-cols-[40%_1fr] overflow-hidden rounded-3xl bg-white ring-1 ring-espuma sm:flex sm:flex-col">
         <Bone className="aspect-square rounded-none" />
-        <div className="flex flex-1 flex-col p-3">
+        <div className="flex flex-col justify-center px-3 py-2.5 sm:p-5">
           <Bone className="h-4 w-11/12" />
           <Bone className="mt-1.5 h-4 w-2/3" />
-          <Bone className="mt-4 h-3 w-12" />
-          <Bone className="mt-1.5 h-5 w-20" />
+          <Bone className="mt-3 h-6 w-24" />
+          <Bone className="mt-3 h-3.5 w-20" />
+          <Bone className="mt-1.5 h-3.5 w-28" />
         </div>
       </div>
     </li>
@@ -35,12 +49,13 @@ export function HomeSkeleton() {
   return (
     <div aria-busy="true" aria-label="Cargando productos">
       <HeaderSkeleton />
-      <div className="mx-auto max-w-5xl px-4 py-8">
-        <Bone className="h-9 w-4/5 sm:w-2/3" />
-        <Bone className="mt-2 h-9 w-3/5 sm:w-1/2" />
-        <Bone className="mt-3 h-5 w-full max-w-sm" />
-        <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-          {Array.from({ length: 4 }, (_, i) => (
+      <div className="page-container pt-5 sm:pt-10">
+        <Bone className="h-9 w-4/5 sm:h-14 sm:w-2/3" />
+        <Bone className="mt-2 h-6 w-2/3 sm:w-1/3" />
+        <PromiseSkeleton className="mt-4" />
+        <div className="mt-5 h-6 sm:mt-8" />
+        <ul className="mt-5 grid grid-cols-1 gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+          {Array.from({ length: 3 }, (_, i) => (
             <ProductCardSkeleton key={i} />
           ))}
         </ul>
@@ -53,15 +68,17 @@ export function ProductSkeleton() {
   return (
     <div aria-busy="true" aria-label="Cargando producto">
       <HeaderSkeleton />
-      <div className="mx-auto max-w-5xl md:grid md:grid-cols-2 md:gap-10 md:px-4 md:py-10">
-        <Bone className="aspect-square w-full rounded-none md:rounded-3xl" />
-        <div className="px-4 pt-5 md:px-0 md:pt-4">
-          <Bone className="h-7 w-48 rounded-full" />
-          <Bone className="mt-3 h-9 w-11/12" />
-          <Bone className="mt-2 h-5 w-full" />
-          <Bone className="mt-1.5 h-5 w-4/5" />
-          <Bone className="mt-5 h-10 w-40" />
-          <Bone className="mt-6 h-14 w-full rounded-2xl" />
+      <div className="mx-auto max-w-5xl pt-3 md:page-container md:grid md:grid-cols-2 md:gap-10 md:py-10">
+        {/* Mismo tamaño que la primera foto de la galería */}
+        <div className="@container px-4 sm:px-6 md:px-0">
+          <Bone className="aspect-square w-[min(calc(84cqw_-_1rem),48svh)] rounded-2xl lg:w-full lg:rounded-3xl" />
+        </div>
+        <div className="px-4 pt-4 sm:px-6 md:px-0 md:pt-2">
+          <Bone className="h-8 w-11/12" />
+          <Bone className="mt-2 h-5 w-4/5" />
+          <Bone className="mt-3 h-10 w-52" />
+          <PromiseSkeleton className="mt-3" />
+          <Bone className="mt-3 h-14 w-full rounded-2xl" />
         </div>
       </div>
     </div>

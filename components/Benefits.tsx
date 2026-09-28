@@ -24,7 +24,7 @@ export default function Benefits({ benefits, description, media = [] }: Props) {
   const cols = benefits.length >= 3 ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2";
 
   return (
-    <section className="mx-auto max-w-5xl px-4 py-12">
+    <section className="page-container py-12">
       <h2 className="display text-[1.75rem] font-extrabold leading-tight sm:text-4xl">Por qué te va a servir</h2>
       {description && <p className="mt-3 max-w-2xl text-lg text-ink/75">{description}</p>}
       {/* grid-flow-dense: en 2 o 3 columnas los beneficios rellenan el hueco que deja un medio a ancho completo. */}

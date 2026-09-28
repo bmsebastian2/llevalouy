@@ -25,7 +25,7 @@ export default function Reviews({ reviews }: { reviews: ProductReview[] }) {
   const [first, ...rest] = reviews;
 
   return (
-    <section className="mx-auto max-w-5xl px-4 py-14">
+    <section className="page-container py-14">
       <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
         <h2 className="display max-w-md text-[1.75rem] font-extrabold leading-tight sm:text-4xl">
           Lo que dicen quienes ya lo tienen

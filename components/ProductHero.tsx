@@ -9,10 +9,11 @@ export default function ProductHero({ product }: { product: Product }) {
 
   return (
     // Celular: todo lo que hace falta para decidir entra en la primera pantalla (390×844)
-    <section className="mx-auto max-w-5xl pt-3 md:grid md:grid-cols-2 md:gap-10 md:px-4 md:py-10">
+    // Celular: la galería va de borde a borde (su propio --pad); desde md, todo dentro del contenedor de página
+    <section className="mx-auto max-w-5xl pt-3 md:page-container md:grid md:grid-cols-2 md:gap-10 md:py-10">
       <ProductGallery images={product.images} alt={product.name} />
 
-      <div className="px-4 pt-4 md:px-0 md:pt-2">
+      <div className="px-4 pt-4 sm:px-6 md:px-0 md:pt-2">
         <h1 className="display line-clamp-2 text-[1.75rem] font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
           {product.name}
         </h1>

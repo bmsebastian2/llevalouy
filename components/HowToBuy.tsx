@@ -13,8 +13,8 @@ const steps = [
  */
 export default function HowToBuy() {
   return (
-    <section id="como-comprar" className="scroll-mt-16 bg-white px-4 py-14 sm:py-16">
-      <div className="mx-auto max-w-5xl">
+    <section id="como-comprar" className="scroll-mt-16 bg-white py-14 sm:py-16">
+      <div className="page-container">
         <h2 className="display text-[1.75rem] font-extrabold leading-tight sm:text-4xl">Cómo comprar</h2>
         <p className="mt-2 text-lg text-ink/75">Tres pasos, y en ninguno pagás por adelantado.</p>
 

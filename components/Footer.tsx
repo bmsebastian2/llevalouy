@@ -28,8 +28,8 @@ export default function Footer({ pageLinks = [] }: { pageLinks?: FooterLink[] })
   ];
 
   return (
-    <footer className="px-4 pb-10 pt-12">
-      <div className="mx-auto max-w-5xl">
+    <footer className="pb-10 pt-12">
+      <div className="page-container">
         <RamblaLine />
 
         <div className="mt-8 grid gap-8 md:grid-cols-[1fr_auto] md:gap-16">

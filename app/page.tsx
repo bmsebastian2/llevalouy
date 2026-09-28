@@ -14,14 +14,14 @@ export default async function HomePage() {
   return (
     <>
       <Header />
-      <main className="mx-auto max-w-5xl px-4 pb-8 sm:pb-10">
+      <main className="page-container pb-8 sm:pb-10">
         {/* Hero compacto: en celular deja lugar para ver los productos sin scrollear */}
         <section className="pt-5 sm:pt-10">
           <h1 className="display text-balance text-[2rem] font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
             Cosas útiles para la casa.
           </h1>
           <p className="mt-1.5 text-lg font-medium text-ink/75 sm:text-xl">Pedís hoy, te lo llevamos hoy.</p>
-          <DeliveryPromise variant="short" className="mt-4 max-w-sm" />
+          <DeliveryPromise variant="short" className="mt-4" />
         </section>
         <RamblaLine className="mt-5 sm:mt-8" />
 

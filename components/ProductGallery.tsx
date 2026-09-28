@@ -57,7 +57,7 @@ export default function ProductGallery({ images, alt }: Props) {
       aria-roledescription="carrusel"
       aria-label={alt}
       // --slide-w: en celular ~80% para que se asome la siguiente, y nunca más alta que el 48% de la pantalla.
-      className="group @container relative [--pad:1rem] [--slide-w:min(calc(84cqw_-_1rem),48svh)] md:[--pad:0px] lg:[--slide-w:100cqw]"
+      className="group @container relative [--pad:1rem] [--slide-w:min(calc(84cqw_-_1rem),48svh)] sm:[--pad:1.5rem] md:[--pad:0px] lg:[--slide-w:100cqw]"
     >
       <div className="relative">
         <div

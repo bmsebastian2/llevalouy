@@ -26,7 +26,7 @@ export default function Header({ cta = false }: { cta?: boolean }) {
 
   return (
     <header className="sticky top-0 z-30 border-b border-espuma bg-white/95 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4">
+      <div className="page-container flex h-14 items-center justify-between gap-3">
         <Link
           href="/"
           aria-label="Llevalo UY, inicio"
