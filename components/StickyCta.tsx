@@ -4,33 +4,54 @@ import { useEffect, useState } from "react";
 import { formatPrice } from "@/lib/format";
 import { site } from "@/lib/site";
 
-export default function StickyCta({ price }: { price: number }) {
-  const [hidden, setHidden] = useState(false);
+/** Id del botón "Pedilo ahora" de arriba: la barra aparece recién cuando ese botón sale de pantalla */
+const MAIN_CTA = "#cta-principal";
 
-  // Se oculta cuando la sección de pedido está en pantalla
+export default function StickyCta({ price }: { price: number }) {
+  const [mainVisible, setMainVisible] = useState(true);
+  const [orderVisible, setOrderVisible] = useState(false);
+
   useEffect(() => {
-    const target = document.querySelector(site.orderAnchor);
-    if (!target) return;
-    const io = new IntersectionObserver(([entry]) => setHidden(entry.isIntersecting), { threshold: 0.2 });
-    io.observe(target);
-    return () => io.disconnect();
+    const main = document.querySelector(MAIN_CTA);
+    const order = document.querySelector(site.orderAnchor);
+    const ios: IntersectionObserver[] = [];
+    if (main) {
+      const io = new IntersectionObserver(([entry]) => setMainVisible(entry.isIntersecting));
+      io.observe(main);
+      ios.push(io);
+    }
+    // Se oculta cuando la sección de pedido está en pantalla
+    if (order) {
+      const io = new IntersectionObserver(([entry]) => setOrderVisible(entry.isIntersecting), { threshold: 0.2 });
+      io.observe(order);
+      ios.push(io);
+    }
+    return () => ios.forEach((io) => io.disconnect());
   }, []);
 
+  const shown = !mainVisible && !orderVisible;
+
+  // Sin animación: aparece y desaparece en seco (el único movimiento de la página es la hoja de barrios)
   return (
     <div
-      className={`fixed inset-x-0 bottom-0 z-40 border-t border-ink/10 bg-white/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur transition-transform duration-300 md:hidden ${
-        hidden ? "translate-y-full" : "translate-y-0"
+      className={`fixed inset-x-0 bottom-0 z-40 border-t border-espuma bg-white px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 md:hidden ${
+        shown ? "" : "invisible"
       }`}
-      aria-hidden={hidden}
+      aria-hidden={!shown}
+      inert={!shown}
     >
-      <a
-        href={site.orderAnchor}
-        tabIndex={hidden ? -1 : 0}
-        className="flex h-14 w-full items-center justify-between rounded-2xl bg-aqua px-5 text-lg font-extrabold text-ink outline-none focus-visible:ring-4 focus-visible:ring-aqua-dark/40 active:scale-[0.99]"
-      >
-        <span>Pedilo ahora</span>
-        <span className="tabular-nums">{formatPrice(price)}</span>
-      </a>
+      <div className="flex items-center gap-4">
+        <p className="shrink-0 text-2xl font-extrabold tabular-nums leading-none tracking-tight">
+          <span className="sr-only">Precio: </span>
+          {formatPrice(price)}
+        </p>
+        <a
+          href={site.orderAnchor}
+          className="flex h-13 flex-1 items-center justify-center rounded-2xl bg-aqua px-5 text-lg font-extrabold text-ink outline-none focus-visible:ring-4 focus-visible:ring-aqua-dark/40"
+        >
+          Pedilo ahora
+        </a>
+      </div>
     </div>
   );
 }

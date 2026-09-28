@@ -12,20 +12,21 @@ export function CartIcon({ className = "" }: { className?: string }) {
   );
 }
 
-/** Acceso al carrito del Header, con la cantidad de unidades */
-export default function CartButton({ className = "" }: { className?: string }) {
+/** Acceso al carrito del Header, con la cantidad de unidades. `hideEmpty`: no se muestra con el carrito vacío. */
+export default function CartButton({ className = "", hideEmpty = false }: { className?: string; hideEmpty?: boolean }) {
   const count = useCart().reduce((sum, it) => sum + it.quantity, 0);
+  if (hideEmpty && count === 0) return null;
 
   return (
     <Link
       href="/carrito"
       aria-label={count > 0 ? `Carrito, ${count} ${count === 1 ? "producto" : "productos"}` : "Carrito"}
-      className={`relative flex size-10 items-center justify-center rounded-xl text-ink outline-none transition hover:bg-ink/5 focus-visible:ring-2 focus-visible:ring-aqua-dark ${className}`}
+      className={`relative flex size-12 items-center justify-center rounded-xl text-ink outline-none transition hover:bg-ink/5 focus-visible:ring-2 focus-visible:ring-aqua-dark ${className}`}
     >
       <CartIcon className="size-6" />
       {count > 0 && (
         <span
-          className="item-in absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-aqua-dark px-1 text-xs font-extrabold tabular-nums text-white ring-2 ring-bg"
+          className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-aqua-dark px-1 text-xs font-extrabold tabular-nums text-white ring-2 ring-white"
           aria-hidden
         >
           {count}

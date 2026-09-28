@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { SHIMMER } from "@/lib/shimmer";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
+import NoPhoto from "./NoPhoto";
 
 type Props = {
   images: string[];
@@ -55,8 +56,8 @@ export default function ProductGallery({ images, alt }: Props) {
       role="region"
       aria-roledescription="carrusel"
       aria-label={alt}
-      // --slide-w: en mobile ~78% para que se asome la siguiente, sin pasar la mitad del alto de pantalla.
-      className="group @container relative [--pad:1rem] [--slide-w:min(calc(80cqw_-_1rem),50svh)] md:[--pad:0px] lg:[--slide-w:100cqw]"
+      // --slide-w: en celular ~80% para que se asome la siguiente, y nunca más alta que el 48% de la pantalla.
+      className="group @container relative [--pad:1rem] [--slide-w:min(calc(84cqw_-_1rem),48svh)] md:[--pad:0px] lg:[--slide-w:100cqw]"
     >
       <div className="relative">
         <div
@@ -66,20 +67,26 @@ export default function ProductGallery({ images, alt }: Props) {
           aria-label="Fotos del producto. Usá las flechas del teclado para cambiar de foto."
           className="no-scrollbar flex snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain px-(--pad) scroll-px-(--pad) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-aqua-dark lg:gap-0 lg:rounded-3xl"
         >
+          {total === 0 && (
+            <div className="relative aspect-square w-(--slide-w) shrink-0 overflow-hidden rounded-2xl lg:rounded-none">
+              <NoPhoto name={alt} />
+            </div>
+          )}
           {images.map((src, i) => (
             <div
               key={src}
               role="group"
               aria-roledescription="diapositiva"
               aria-label={`Imagen ${i + 1} de ${total}`}
-              className="relative aspect-square w-(--slide-w) shrink-0 snap-start snap-always overflow-hidden rounded-2xl bg-aqua/10 lg:rounded-none"
+              className="relative aspect-square w-(--slide-w) shrink-0 snap-start snap-always overflow-hidden rounded-2xl bg-foto lg:rounded-none"
             >
               <Image
                 src={src}
                 alt={`${alt}, foto ${i + 1} de ${total}`}
                 fill
                 sizes="(min-width: 1024px) 480px, (min-width: 768px) 40vw, 85vw"
-                className="object-cover"
+                // Mismo tratamiento que las tarjetas: objeto grande sobre fondo neutro
+                className="object-contain p-[4%] mix-blend-multiply"
                 preload={i === 0}
                 placeholder={SHIMMER}
               />
@@ -108,27 +115,7 @@ export default function ProductGallery({ images, alt }: Props) {
         )}
       </div>
 
-      {total > 1 && (
-        <div className="mt-2 flex justify-center lg:hidden">
-          {images.map((src, i) => (
-            <button
-              key={src}
-              type="button"
-              onClick={() => goTo(i)}
-              aria-label={`Ir a la imagen ${i + 1} de ${total}`}
-              aria-current={i === active ? "true" : undefined}
-              className="flex h-6 items-center px-1"
-            >
-              <span
-                className={`block h-1.5 rounded-full transition-[width,background-color] duration-300 motion-reduce:transition-none ${
-                  i === active ? "w-5 bg-aqua-dark" : "w-1.5 bg-ink/25"
-                }`}
-              />
-            </button>
-          ))}
-        </div>
-      )}
-
+      {/* En celular no hay puntos: el contador y la foto que se asoma ya dicen que hay más, y no ocupan alto */}
       {total > 1 && (
         <div className="mt-3 hidden gap-2 lg:flex">
           {images.map((src, i) => (
@@ -138,11 +125,11 @@ export default function ProductGallery({ images, alt }: Props) {
               onClick={() => goTo(i)}
               aria-label={`Ver imagen ${i + 1} de ${total}`}
               aria-current={i === active ? "true" : undefined}
-              className={`relative size-16 overflow-hidden rounded-xl bg-aqua/10 ring-2 transition ${
+              className={`relative size-16 overflow-hidden rounded-xl bg-foto ring-2 transition ${
                 i === active ? "ring-aqua-dark" : "ring-transparent opacity-70 hover:opacity-100"
               }`}
             >
-              <Image src={src} alt="" fill sizes="64px" className="object-cover" placeholder={SHIMMER} />
+              <Image src={src} alt="" fill sizes="64px" className="object-contain mix-blend-multiply" placeholder={SHIMMER} />
             </button>
           ))}
         </div>

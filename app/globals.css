@@ -8,6 +8,8 @@
   --white: #ffffff;
   /* Bordes y separadores finos, derivado del aqua */
   --espuma: #cfe6e1;
+  /* Fondo de todas las fotos de producto: claro y neutro, sin aqua */
+  --foto: #f3f5f4;
 }
 
 @theme inline {
@@ -17,6 +19,7 @@
   --color-bg: var(--bg);
   --color-white: var(--white);
   --color-espuma: var(--espuma);
+  --color-foto: var(--foto);
   --font-sans: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -45,45 +48,12 @@ body {
   background-size: 20px 10px;
 }
 
-/* Muescas laterales de ticket: círculos del color del fondo de la sección */
-.ticket-notch {
-  position: relative;
-}
-.ticket-notch::before,
-.ticket-notch::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  width: 18px;
-  height: 18px;
-  border-radius: 9999px;
-  background: var(--notch, var(--bg));
-  transform: translateY(-50%);
-}
-.ticket-notch::before {
-  left: -9px;
-}
-.ticket-notch::after {
-  right: -9px;
-}
-
-/* Producto recién sumado al pedido */
-@keyframes item-in {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-}
-.item-in {
-  animation: item-in 0.25s ease-out;
-}
-
 /* Títulos display: Bricolage un poco angosta */
 .display {
   font-stretch: 90%;
 }
 
-/* Sin scroll de fondo con el selector de barrio abierto */
+/* Sin scroll de fondo con la hoja de barrios abierta */
 html:has(dialog[open]) {
   overflow: hidden;
 }
@@ -92,52 +62,39 @@ dialog::backdrop {
 }
 
 /*
-  El único momento orquestado: la respuesta del barrio.
-  La palabra se abre de angosta y liviana a ancha y pesada, el resaltado aqua se pinta detrás
-  y después aparece la frase.
+  El único momento con movimiento: la hoja de barrios sube desde abajo (en compu aparece en el centro).
 */
-@keyframes answer-open {
+@keyframes sheet-up {
   from {
-    font-stretch: 75%;
-    font-weight: 400;
-    opacity: 0.2;
-  }
-  30% {
-    opacity: 1;
+    transform: translateY(100%);
   }
 }
-@keyframes answer-mark {
+@keyframes sheet-in {
   from {
-    background-size: 0% 100%;
+    opacity: 0;
+    transform: translateY(12px);
   }
 }
-@keyframes answer-line {
+@keyframes backdrop-in {
   from {
     opacity: 0;
   }
 }
-.answer-word {
-  font-stretch: 100%;
+.sheet[open] {
+  animation: sheet-up 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.answer-mark {
-  background: linear-gradient(transparent 58%, var(--aqua) 58%, var(--aqua) 92%, transparent 92%) no-repeat left / 100% 100%;
-  box-decoration-break: clone;
+.sheet[open]::backdrop {
+  animation: backdrop-in 0.32s ease-out;
 }
-.answer-animate .answer-word {
-  animation: answer-open 0.38s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-.answer-animate .answer-mark {
-  animation: answer-mark 0.3s 0.2s ease-out both;
-}
-.answer-animate .answer-line {
-  animation: answer-line 0.25s 0.12s ease-out both;
+@media (min-width: 768px) {
+  .sheet[open] {
+    animation-name: sheet-in;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .item-in,
-  .answer-animate .answer-word,
-  .answer-animate .answer-mark,
-  .answer-animate .answer-line {
+  .sheet[open],
+  .sheet[open]::backdrop {
     animation: none;
   }
 

@@ -6,7 +6,7 @@ import type { ProductUsageMedia } from "@/types/product";
 import { SHIMMER } from "@/lib/shimmer";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 
-const FRAME = "relative aspect-[4/5] overflow-hidden rounded-2xl bg-aqua/10 sm:aspect-video";
+const FRAME = "relative aspect-[4/5] overflow-hidden rounded-2xl bg-foto sm:aspect-video";
 
 export default function UsageMedia({ item }: { item: ProductUsageMedia }) {
   return (

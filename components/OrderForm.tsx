@@ -249,7 +249,7 @@ export default function OrderForm({ product, catalog }: Props) {
                 {showExtras ? "Ocultar otros productos" : "+ Sumar otro producto"}
               </button>
               {showExtras && (
-                <div id="sumar-productos" className="item-in mt-3">
+                <div id="sumar-productos" className="mt-3">
                   <p className="text-sm text-ink/55">Van en el mismo envío.</p>
                   <ul className="no-scrollbar mt-2 flex snap-x gap-2.5 overflow-x-auto pb-1" aria-label="Otros productos">
                     {extras.map((p) => (
@@ -567,7 +567,7 @@ function ItemRow({
   const removes = removable && quantity <= 1;
 
   return (
-    <li className={`flex items-center gap-2.5 rounded-2xl bg-bg p-2 pr-2.5 sm:gap-3 sm:p-2.5 sm:pr-3 ${removable ? "item-in" : ""}`}>
+    <li className={`flex items-center gap-2.5 rounded-2xl bg-bg p-2 pr-2.5 sm:gap-3 sm:p-2.5 sm:pr-3`}>
       {product.image && (
         <div className="relative size-12 shrink-0 overflow-hidden rounded-xl sm:size-14">
           <Image src={product.image} alt="" fill sizes="56px" className="object-cover" placeholder={SHIMMER} />
