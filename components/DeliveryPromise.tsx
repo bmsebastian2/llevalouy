@@ -6,7 +6,7 @@ import BarrioSheet from "./BarrioSheet";
 import { CashIcon, SameDayIcon } from "./DeliveryIcons";
 
 type Props = {
-  /** "short": el home, sin la hora de corte ni los medios de pago */
+  /** "short": el home, sin los medios de pago */
   variant?: "full" | "short";
   className?: string;
 };
@@ -22,10 +22,7 @@ export default function DeliveryPromise({ variant = "full", className = "" }: Pr
       <ul className={`grid px-4 pt-3 ${full ? "gap-2" : "gap-1.5"}`}>
         <li className="flex gap-2.5 leading-snug">
           <SameDayIcon className="size-5 shrink-0 translate-y-px text-aqua-dark" />
-          <p>
-            <strong className="font-extrabold">{delivery.main}</strong>
-            {full && delivery.detail && <span className="text-ink/75"> — {delivery.detail}</span>}
-          </p>
+          <p className="font-extrabold">{delivery.main}</p>
         </li>
         <li className="flex gap-2.5 leading-snug">
           <CashIcon className="size-5 shrink-0 translate-y-px text-aqua-dark" />
@@ -54,7 +51,7 @@ export default function DeliveryPromise({ variant = "full", className = "" }: Pr
 export function DeliveryLine({ className = "" }: { className?: string }) {
   const { short } = useDelivery();
   return (
-    <p className={`flex flex-wrap gap-x-3 gap-y-1 text-sm font-medium leading-tight text-ink/75 ${className}`}>
+    <p className={`flex flex-wrap gap-x-3 gap-y-1 font-medium leading-tight text-ink/75 ${className}`}>
       <span className="inline-flex items-center gap-1.5">
         <SameDayIcon className="size-4 shrink-0 text-aqua-dark" />
         {short}

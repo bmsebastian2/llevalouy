@@ -78,15 +78,15 @@ export default function ProductGallery({ images, alt }: Props) {
               role="group"
               aria-roledescription="diapositiva"
               aria-label={`Imagen ${i + 1} de ${total}`}
-              className="relative aspect-square w-(--slide-w) shrink-0 snap-start snap-always overflow-hidden rounded-2xl bg-foto lg:rounded-none"
+              className="relative aspect-square w-(--slide-w) shrink-0 snap-start snap-always overflow-hidden rounded-2xl lg:rounded-none"
             >
               <Image
                 src={src}
                 alt={`${alt}, foto ${i + 1} de ${total}`}
                 fill
                 sizes="(min-width: 1024px) 480px, (min-width: 768px) 40vw, 85vw"
-                // Mismo tratamiento que las tarjetas: objeto grande sobre fondo neutro
-                className="object-contain p-[4%] mix-blend-multiply"
+                // Mismo tratamiento que las tarjetas: la foto llena el cuadro
+                className="object-cover object-center"
                 preload={i === 0}
                 placeholder={SHIMMER}
               />
@@ -125,11 +125,11 @@ export default function ProductGallery({ images, alt }: Props) {
               onClick={() => goTo(i)}
               aria-label={`Ver imagen ${i + 1} de ${total}`}
               aria-current={i === active ? "true" : undefined}
-              className={`relative size-16 overflow-hidden rounded-xl bg-foto ring-2 transition ${
+              className={`relative size-16 overflow-hidden rounded-xl ring-2 transition ${
                 i === active ? "ring-aqua-dark" : "ring-transparent opacity-70 hover:opacity-100"
               }`}
             >
-              <Image src={src} alt="" fill sizes="64px" className="object-contain mix-blend-multiply" placeholder={SHIMMER} />
+              <Image src={src} alt="" fill sizes="64px" className="object-cover object-center" placeholder={SHIMMER} />
             </button>
           ))}
         </div>

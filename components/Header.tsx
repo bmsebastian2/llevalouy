@@ -51,10 +51,12 @@ export default function Header({ cta = false }: { cta?: boolean }) {
               href={whatsappUrl(whatsapp, "¡Hola! Tengo una consulta.")}
               target="_blank"
               rel="noopener noreferrer"
-              className="-mr-1 inline-flex h-12 items-center gap-2 rounded-xl px-3 font-bold text-ink outline-none ring-1 ring-espuma transition-colors hover:bg-bg focus-visible:ring-4 focus-visible:ring-aqua-dark/40"
+              aria-label="Consultas por WhatsApp"
+              className="inline-flex h-12 min-w-12 items-center justify-center gap-2 rounded-xl px-3 font-bold text-ink outline-none ring-1 ring-espuma transition-colors hover:bg-bg focus-visible:ring-4 focus-visible:ring-aqua-dark/40"
             >
               <WhatsappIcon className="size-5 text-aqua-dark" />
-              Consultas
+              {/* Menos de 400px: solo el ícono */}
+              <span className="hidden min-[400px]:inline">Consultas</span>
             </a>
           )}
         </div>

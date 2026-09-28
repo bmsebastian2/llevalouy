@@ -24,10 +24,11 @@ export default function ProductHero({ product }: { product: Product }) {
           </span>
           {product.compareAtPrice && off && (
             <>
-              <s className="text-lg tabular-nums text-ink/65">
-                <span className="sr-only">Antes </span>
-                {formatPrice(product.compareAtPrice)}
-              </s>
+              <span role="img" aria-label={`Precio anterior ${formatPrice(product.compareAtPrice)}`}>
+                <s aria-hidden="true" className="text-lg tabular-nums text-ink/65">
+                  {formatPrice(product.compareAtPrice)}
+                </s>
+              </span>
               <span className="rounded-lg bg-aqua px-2 py-1 text-sm font-extrabold leading-none text-ink">
                 -{off}%<span className="sr-only"> de descuento</span>
               </span>

@@ -4,23 +4,9 @@ import ProductCard from "@/components/ProductCard";
 import DeliveryPromise from "@/components/DeliveryPromise";
 import RamblaLine from "@/components/RamblaLine";
 import { getActiveProducts } from "@/lib/products";
-import { BARRIOS, DELIVERY_DAYS } from "@/lib/delivery";
 import { site } from "@/lib/site";
 
 export const revalidate = 60;
-
-const WEEKDAYS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
-
-/** [1, 2, 3, 4, 5, 6] → "de lunes a sábado"; si los días no son seguidos, los nombra: "lunes, miércoles y viernes" */
-function deliveryDaysText(days: number[]) {
-  const sorted = [...days].sort((a, b) => a - b);
-  const consecutive = sorted.every((d, i) => i === 0 || d === sorted[i - 1] + 1);
-  if (sorted.length > 2 && consecutive) return `de ${WEEKDAYS[sorted[0]]} a ${WEEKDAYS[sorted[sorted.length - 1]]}`;
-  const names = sorted.map((d) => WEEKDAYS[d]);
-  return names.length > 1 ? `${names.slice(0, -1).join(", ")} y ${names[names.length - 1]}` : names.join("");
-}
-
-const cutoffHour = (BARRIOS.find((b) => b.sameDay) ?? BARRIOS[0]).cutoffHour;
 
 export default async function HomePage() {
   const products = await getActiveProducts();
@@ -34,9 +20,7 @@ export default async function HomePage() {
           <h1 className="display text-balance text-[2rem] font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
             Cosas útiles para la casa.
           </h1>
-          <p className="mt-1.5 text-lg font-medium text-ink/75 sm:text-xl" aria-describedby="nota-entrega">
-            Pedís hoy, te lo llevamos hoy.<span aria-hidden="true">*</span>
-          </p>
+          <p className="mt-1.5 text-lg font-medium text-ink/75 sm:text-xl">Pedís hoy, te lo llevamos hoy.</p>
           <DeliveryPromise variant="short" className="mt-4 max-w-sm" />
         </section>
         <RamblaLine className="mt-5 sm:mt-8" />
@@ -70,12 +54,6 @@ export default async function HomePage() {
             </a>
           </div>
         )}
-
-        <p id="nota-entrega" className="mt-6 max-w-xl text-sm leading-snug text-ink/70 sm:mt-8">
-          <span aria-hidden="true">*</span>Entrega en el día para pedidos hechos antes de las {cutoffHour}:00,{" "}
-          {deliveryDaysText(DELIVERY_DAYS)}, en los barrios con entrega en el día. Si pedís después, te llega el
-          próximo día de reparto.
-        </p>
       </main>
       <Footer />
     </>
