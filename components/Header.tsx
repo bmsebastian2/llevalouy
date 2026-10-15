@@ -3,22 +3,7 @@ import Link from "next/link";
 import { site } from "@/lib/site";
 import { getStoreWhatsapp, whatsappUrl } from "@/lib/whatsapp";
 import CartButton from "./CartButton";
-
-function WhatsappIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true" className={className}>
-      <path
-        d="M3.5 20.5 4.8 16A8.5 8.5 0 1 1 8 19.2z"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9 8.5c0 3.2 3.3 6.5 6.5 6.5l1-1.6-2-1-1 .9c-1-.4-2.4-1.8-2.8-2.8l.9-1-1-2z"
-        fill="currentColor"
-        stroke="none"
-      />
-    </svg>
-  );
-}
+import { WhatsappIcon } from "./DeliveryIcons";
 
 /** `cta`: solo en la página de producto, donde existe el formulario de pedido. */
 export default function Header({ cta = false }: { cta?: boolean }) {

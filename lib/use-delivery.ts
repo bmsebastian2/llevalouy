@@ -17,12 +17,18 @@ export type DeliveryPromiseText = {
   main: string;
   /** Para las tarjetas: "Entrega hoy", "Entrega mañana" */
   short: string;
+  /** Para el hero, en dos líneas: "Envío hoy" / "si pedís antes de las 14:00", "Llega mañana" / "a Carrasco" */
+  title: string;
+  detail: string;
   today: boolean;
   choice: BarrioChoice | null;
 };
 
 /** 14 → "14:00" */
 const hourText = (h: number) => `${h}:00`;
+
+/** En el hero, "Punta Carretas" no se corta entre líneas */
+const keep = (name: string) => name.replace(/ /g, "\u00A0");
 
 /**
  * Cuándo llega, con el barrio guardado si existe.
@@ -44,6 +50,8 @@ export function useDelivery(): DeliveryPromiseText {
   const generalToday = {
     main: `Entrega hoy en Montevideo si pedís antes de las ${hourText(REFERENCE.cutoffHour)}`,
     short: "Entrega hoy",
+    title: "Envío hoy",
+    detail: `si pedís antes de las ${hourText(REFERENCE.cutoffHour)}`,
     today: true,
     choice: null,
   };
@@ -58,14 +66,30 @@ export function useDelivery(): DeliveryPromiseText {
         ? {
             main: `Te llega hoy a ${barrio.name} si pedís antes de las ${hourText(barrio.cutoffHour)}`,
             short: "Entrega hoy",
+            title: `Hoy a ${keep(barrio.name)}`,
+            detail: `antes de las ${hourText(barrio.cutoffHour)}`,
             today: true,
             choice,
           }
         : // Sin envío en el día (o pasada la hora de corte): "A Carrasco te llega mañana"
-          { main: `A ${barrio.name} te llega ${when(answer.headline)}`, short: `Entrega ${when(answer.headline)}`, today: false, choice };
+          {
+            main: `A ${barrio.name} te llega ${when(answer.headline)}`,
+            short: `Entrega ${when(answer.headline)}`,
+            title: `Llega ${when(answer.headline)}`,
+            detail: `a ${keep(barrio.name)}`,
+            today: false,
+            choice,
+          };
     }
     const place = choice.kind === "interior" ? "fuera de Montevideo" : `a ${choice.name}`;
-    return { main: `Te llega en ${when(answer.headline)} ${place}`, short: `Entrega en ${when(answer.headline)}`, today: false, choice };
+    return {
+      main: `Te llega en ${when(answer.headline)} ${place}`,
+      short: `Entrega en ${when(answer.headline)}`,
+      title: `Llega en ${when(answer.headline)}`,
+      detail: place,
+      today: false,
+      choice,
+    };
   }
 
   const general = deliveryAnswer({ kind: "barrio", name: REFERENCE.name }, now);
@@ -74,6 +98,8 @@ export function useDelivery(): DeliveryPromiseText {
     : {
         main: `Entrega ${when(general.headline)} en Montevideo`,
         short: `Entrega ${when(general.headline)}`,
+        title: `Llega ${when(general.headline)}`,
+        detail: "en Montevideo",
         today: false,
         choice: null,
       };

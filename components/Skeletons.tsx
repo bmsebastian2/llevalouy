@@ -27,6 +27,29 @@ function PromiseSkeleton({ className = "" }: { className?: string }) {
   );
 }
 
+/** Señales del hero (HeroTrust): tres columnas en celular, pastillas desde 640px */
+function TrustSkeleton({ className = "" }: { className?: string }) {
+  return (
+    <div
+      className={`grid grid-cols-3 divide-x divide-espuma rounded-2xl bg-white ring-1 ring-espuma sm:flex sm:flex-wrap sm:gap-2.5 sm:divide-x-0 sm:bg-transparent sm:ring-0 ${className}`}
+    >
+      {Array.from({ length: 3 }, (_, i) => (
+        <div
+          key={i}
+          className="flex flex-col items-center gap-1.5 px-2 py-2.5 sm:h-[3.625rem] sm:w-56 sm:flex-row sm:gap-3 sm:rounded-full sm:bg-white sm:py-1.5 sm:pl-1.5 sm:ring-1 sm:ring-espuma"
+        >
+          <Bone className="size-9 shrink-0 rounded-full sm:size-10" />
+          <div className="flex w-full flex-col items-center gap-1.5 sm:items-start">
+            <Bone className="h-4 w-4/5" />
+            <Bone className="h-3.5 w-full sm:w-11/12" />
+            <Bone className="h-3.5 w-1/2 sm:hidden" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /** Card horizontal en celular, vertical desde tablet (como ProductCard) */
 export function ProductCardSkeleton() {
   return (
@@ -49,10 +72,12 @@ export function HomeSkeleton() {
   return (
     <div aria-busy="true" aria-label="Cargando productos">
       <HeaderSkeleton />
-      <div className="page-container pt-5 sm:pt-10">
-        <Bone className="h-9 w-4/5 sm:h-14 sm:w-2/3" />
+      <div className="page-container pt-5 sm:pt-10 lg:pt-16">
+        {/* El titular ocupa dos líneas en todos los anchos */}
+        <Bone className="h-8 w-11/12 sm:h-11 sm:w-2/3 lg:h-[3.25rem] lg:w-[34rem]" />
+        <Bone className="mt-1.5 h-8 w-3/5 sm:h-11 sm:w-1/3 lg:h-[3.25rem] lg:w-80" />
         <Bone className="mt-2 h-6 w-2/3 sm:w-1/3" />
-        <PromiseSkeleton className="mt-4" />
+        <TrustSkeleton className="mt-4 sm:mt-6 lg:mt-8" />
         <div className="mt-5 h-6 sm:mt-8" />
         <ul className="mt-5 grid grid-cols-1 gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
           {Array.from({ length: 3 }, (_, i) => (

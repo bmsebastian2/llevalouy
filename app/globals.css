@@ -64,6 +64,18 @@ body {
   font-stretch: 90%;
 }
 
+/*
+  Foto ambiental del hero: se funde con el fondo hacia la izquierda (el texto queda sobre liso), hacia abajo
+  y hacia la derecha (termina en el borde del contenido, no en el de la pantalla).
+  Los cortes siguen a hero-hogar.png: el primer 40% es fondo desenfocado y la frase empieza en el 43%.
+*/
+.hero-photo {
+  mask-image:
+    linear-gradient(to right, transparent 20%, #000 40%), linear-gradient(to top, transparent, #000 20%),
+    linear-gradient(to left, transparent, #000 12%);
+  mask-composite: intersect;
+}
+
 /* Sin scroll de fondo con la hoja de barrios abierta */
 html:has(dialog[open]) {
   overflow: hidden;
