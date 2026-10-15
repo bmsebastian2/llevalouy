@@ -14,10 +14,30 @@ create table if not exists public.products (
   description      text not null default '',
   faqs             jsonb not null default '[]'::jsonb,           -- [{q, a}]
   reviews          jsonb not null default '[]'::jsonb,           -- [{name, city, rating, text}]
+  highlight        text check (highlight is null or char_length(highlight) <= 40),  -- beneficio de la card del home
+  highlight_icon   text check (highlight_icon is null or highlight_icon in ('drop', 'bolt', 'leaf', 'home', 'check', 'sun', 'shield')),
+  context_tag      jsonb check (context_tag is null or (                  -- etiqueta sobre la foto de la card: {text, icon}
+                     jsonb_typeof(context_tag) = 'object'
+                     and char_length(coalesce(context_tag->>'text', '')) between 1 and 20
+                     and coalesce(context_tag->>'icon', '') in ('leaf', 'drop', 'home', 'sun', 'bolt', 'shield'))),
   active           boolean not null default true,
   created_at       timestamptz not null default now(),
   updated_at       timestamptz not null default now()
 );
+
+-- Bases creadas antes del beneficio destacado de la card del home
+alter table public.products add column if not exists highlight text
+  check (highlight is null or char_length(highlight) <= 40);
+alter table public.products add column if not exists highlight_icon text
+  check (highlight_icon is null or highlight_icon in ('drop', 'bolt', 'leaf', 'home', 'check', 'sun', 'shield'));
+
+-- Bases creadas antes de la etiqueta de contexto de la card del home
+alter table public.products add column if not exists context_tag jsonb
+  check (context_tag is null or (
+    jsonb_typeof(context_tag) = 'object'
+    and char_length(coalesce(context_tag->>'text', '')) between 1 and 20
+    and coalesce(context_tag->>'icon', '') in ('leaf', 'drop', 'home', 'sun', 'bolt', 'shield')
+  ));
 
 -- ───────────── Pedidos ─────────────
 create table if not exists public.orders (

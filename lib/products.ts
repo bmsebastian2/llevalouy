@@ -1,5 +1,5 @@
 import "server-only";
-import type { Product } from "@/types/product";
+import { CONTEXT_TAG_ICONS, HIGHLIGHT_ICONS, type Product } from "@/types/product";
 import { mockProducts } from "@/data/mock-products";
 import { getSupabase } from "@/lib/supabase";
 
@@ -18,11 +18,25 @@ export type ProductRow = {
   description: string;
   faqs: Product["faqs"];
   reviews: Product["reviews"];
+  /** Opcionales: no existen hasta correr la migración del beneficio destacado */
+  highlight?: string | null;
+  highlight_icon?: string | null;
+  /** jsonb {text, icon}. Opcional: no existe hasta correr la migración de la etiqueta de contexto */
+  context_tag?: unknown;
   active: boolean;
 };
 
-export const PRODUCT_COLUMNS =
-  "id, slug, name, tagline, price, compare_at_price, images, benefits, description, faqs, reviews, active";
+// "*" y no la lista de columnas: las migraciones se corren a mano, y pedir una columna que todavía no existe
+// hace fallar toda la consulta. Así funciona antes y después de agregar highlight / highlight_icon.
+export const PRODUCT_COLUMNS = "*";
+
+/** La base ya valida el formato; acá se descarta cualquier cosa que no sea {text, icon} válido. */
+function toContextTag(value: unknown): Product["contextTag"] {
+  if (typeof value !== "object" || value === null) return undefined;
+  const { text, icon } = value as Record<string, unknown>;
+  const name = CONTEXT_TAG_ICONS.find((i) => i === icon);
+  return typeof text === "string" && text.trim() && name ? { text: text.trim(), icon: name } : undefined;
+}
 
 export function toProduct(row: ProductRow): Product {
   return {
@@ -30,6 +44,9 @@ export function toProduct(row: ProductRow): Product {
     slug: row.slug,
     name: row.name,
     tagline: row.tagline,
+    highlight: row.highlight?.trim() || undefined,
+    highlightIcon: HIGHLIGHT_ICONS.find((icon) => icon === row.highlight_icon),
+    contextTag: toContextTag(row.context_tag),
     price: row.price,
     compareAtPrice: row.compare_at_price ?? undefined,
     images: row.images ?? [],

@@ -26,11 +26,31 @@ export type ProductUsageMedia = {
   poster?: string;
 };
 
+/** Íconos del beneficio destacado de la card del home. Mismos valores que el check de la base. */
+export const HIGHLIGHT_ICONS = ["drop", "bolt", "leaf", "home", "check", "sun", "shield"] as const;
+export type HighlightIcon = (typeof HIGHLIGHT_ICONS)[number];
+
+/** Íconos de la etiqueta de contexto. Mismos valores que el check de la base. */
+export const CONTEXT_TAG_ICONS = ["leaf", "drop", "home", "sun", "bolt", "shield"] as const;
+
+/** Etiqueta sobre la foto de la card del home, ej. "Ideal para jardín" */
+export type ProductContextTag = {
+  /** Máx. 20 caracteres */
+  text: string;
+  icon: (typeof CONTEXT_TAG_ICONS)[number];
+};
+
 export type Product = {
   id: string;
   slug: string;
   name: string;
   tagline: string;
+  /** Beneficio de una línea para la card del home, máx. 40 caracteres. Sin él, la card muestra el tagline. */
+  highlight?: string;
+  /** Sin él, el beneficio se muestra con "check" */
+  highlightIcon?: HighlightIcon;
+  /** Sin ella, la foto de la card no lleva etiqueta */
+  contextTag?: ProductContextTag;
   /** Precio en UYU, entero */
   price: number;
   /** Precio "antes" en UYU, entero */

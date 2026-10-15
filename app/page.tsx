@@ -39,10 +39,11 @@ export default async function HomePage() {
           <RamblaLine className="mt-5 sm:mt-8" />
 
           {products.length > 0 ? (
-            <ul className="mt-5 grid grid-cols-1 gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+            // Celular: una columna. Desde 640px: 2 columnas; desde 1024px: 3
+            <ul className="mt-5 grid grid-cols-1 gap-4 sm:mt-8 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
               {products.map((p, i) => (
-                <li key={p.id} className={i === 0 ? "sm:col-span-2" : undefined}>
-                  <ProductCard product={p} featured={i === 0} />
+                <li key={p.id}>
+                  <ProductCard product={p} preload={i === 0} />
                 </li>
               ))}
             </ul>

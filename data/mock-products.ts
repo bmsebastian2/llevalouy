@@ -6,6 +6,9 @@ export const mockProducts: Product[] = [
     slug: "manguera-extensible",
     name: "Manguera extensible 30 m",
     tagline: "Se estira hasta 30 metros y vuelve a su tamaño. Regá todo el patio sin enredos.",
+    highlight: "Se estira hasta 30 m, sin enredos",
+    highlightIcon: "drop",
+    contextTag: { text: "Ideal para jardín", icon: "leaf" },
     price: 1290,
     compareAtPrice: 1990,
     images: [

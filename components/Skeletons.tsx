@@ -50,19 +50,27 @@ function TrustSkeleton({ className = "" }: { className?: string }) {
   );
 }
 
-/** Card horizontal en celular, vertical desde tablet (como ProductCard) */
+/** Celular: foto a la izquierda, características y botón abajo. Desde 640px: vertical, foto arriba (como ProductCard) */
 export function ProductCardSkeleton() {
   return (
     <li>
-      <div className="grid grid-cols-[40%_1fr] overflow-hidden rounded-3xl bg-white ring-1 ring-espuma sm:flex sm:flex-col">
-        <Bone className="aspect-square rounded-none" />
-        <div className="flex flex-col justify-center px-3 py-2.5 sm:p-5">
-          <Bone className="h-4 w-11/12" />
-          <Bone className="mt-1.5 h-4 w-2/3" />
-          <Bone className="mt-3 h-6 w-24" />
-          <Bone className="mt-3 h-3.5 w-20" />
-          <Bone className="mt-1.5 h-3.5 w-28" />
+      <div className="grid h-full grid-cols-[min(40%,11rem)_1fr] gap-x-3 gap-y-4 rounded-3xl border border-ink/6 bg-white p-4 shadow-[0_8px_24px_rgb(11_42_42/0.06)] sm:flex sm:flex-col sm:gap-5">
+        <Bone className="aspect-square w-full rounded-[18px] sm:aspect-[4/3]" />
+        <div className="flex flex-col justify-center sm:justify-start">
+          <Bone className="h-5 w-11/12 sm:h-7" />
+          <Bone className="mt-2 h-6 w-28 sm:h-10 sm:w-40" />
+          <Bone className="mt-2 h-3.5 w-full sm:h-4" />
+          <Bone className="mt-1.5 h-3.5 w-2/3 sm:h-4" />
         </div>
+        <div className="col-span-2 grid gap-2.5">
+          {Array.from({ length: 3 }, (_, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <Bone className="size-9 shrink-0 rounded-full" />
+              <Bone className="h-4 w-3/5" />
+            </div>
+          ))}
+        </div>
+        <Bone className="col-span-2 h-13 rounded-[14px] sm:mt-auto" />
       </div>
     </li>
   );
@@ -79,7 +87,7 @@ export function HomeSkeleton() {
         <Bone className="mt-2 h-6 w-2/3 sm:w-1/3" />
         <TrustSkeleton className="mt-4 sm:mt-6 lg:mt-8" />
         <div className="mt-5 h-6 sm:mt-8" />
-        <ul className="mt-5 grid grid-cols-1 gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+        <ul className="mt-5 grid grid-cols-1 gap-4 sm:mt-8 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
           {Array.from({ length: 3 }, (_, i) => (
             <ProductCardSkeleton key={i} />
           ))}

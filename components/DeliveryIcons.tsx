@@ -1,5 +1,5 @@
 /* Íconos chicos de entrega, pago y contacto, con el mismo trazo de 1,5px que la línea de la Rambla */
-const iconProps = {
+export const iconProps = {
   viewBox: "0 0 24 24",
   fill: "none",
   stroke: "currentColor",
