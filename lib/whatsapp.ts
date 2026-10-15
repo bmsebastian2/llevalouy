@@ -62,6 +62,15 @@ export function buildCustomerMessage(order: Order): string {
       return `¡Hola ${firstName}! 😊 Esperamos que disfrutes ${
         order.items.length === 1 ? `tu ${order.items[0].productName}` : "tu compra"
       }. Si tenés un minuto, contanos qué te pareció. ¡Gracias por comprar en Llevalo UY!`;
+    case "cancelled":
+      return [
+        `¡Hola ${firstName}! Te escribimos de Llevalo UY para avisarte que tu pedido N° ${order.code} fue cancelado:`,
+        "",
+        ...itemLines(order),
+        `💵 Total: *${formatPrice(order.total)}*`,
+        "",
+        "Si fue un error o querés volver a pedirlo, respondenos por acá y lo coordinamos. ¡Disculpá las molestias!",
+      ].join("\n");
     default:
       return [
         `¡Hola ${firstName}! 👋 Te escribimos de Llevalo UY por tu pedido N° ${order.code}:`,

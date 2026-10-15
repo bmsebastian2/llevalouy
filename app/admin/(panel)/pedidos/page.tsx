@@ -118,7 +118,14 @@ function OrderCard({ order: o }: { order: Order }) {
         rel="noopener noreferrer"
         className="mt-4 flex h-11 items-center justify-center gap-2 rounded-xl bg-[#25D366] text-sm font-extrabold text-ink transition active:scale-[0.99]"
       >
-        💬 {o.status === "shipped" ? "Avisar que va en camino" : o.status === "delivered" ? "Pedir opinión" : "Confirmar por WhatsApp"}
+        💬{" "}
+        {o.status === "shipped"
+          ? "Avisar que va en camino"
+          : o.status === "delivered"
+            ? "Pedir opinión"
+            : o.status === "cancelled"
+              ? "Avisar cancelación"
+              : "Confirmar por WhatsApp"}
       </a>
     </li>
   );
