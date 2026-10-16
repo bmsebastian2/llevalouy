@@ -131,6 +131,8 @@ export async function saveProduct(id: string | null, input: ProductInput): Promi
     compare_at_price: input.compareAtPrice ?? null,
     images: input.images,
     benefits: input.benefits,
+    highlight: input.highlight ?? null,
+    highlight_icon: input.highlight ? (input.highlightIcon ?? "check") : null,
     context_tag: input.contextTag ?? null,
     faqs: input.faqs,
     reviews: input.reviews,

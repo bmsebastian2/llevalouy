@@ -6,10 +6,20 @@ import { getImageUploadUrl, saveProduct, type SaveProductState } from "@/app/adm
 import { slugify, type ProductErrors } from "@/lib/admin/product-validation";
 import { discountPercent, formatPrice } from "@/lib/format";
 import { SHIMMER } from "@/lib/shimmer";
-import { CONTEXT_TAG_ICONS, type Product, type ProductBenefit, type ProductContextTag, type ProductFaq, type ProductReview } from "@/types/product";
+import {
+  CONTEXT_TAG_ICONS,
+  HIGHLIGHT_ICONS,
+  type HighlightIcon as IconName,
+  type Product,
+  type ProductBenefit,
+  type ProductContextTag,
+  type ProductFaq,
+  type ProductReview,
+} from "@/types/product";
 import HighlightIcon from "@/components/HighlightIcon";
 
-const TAG_ICON_LABEL: Record<ProductContextTag["icon"], string> = {
+const ICON_LABEL: Record<IconName, string> = {
+  check: "Tilde",
   leaf: "Hoja",
   drop: "Gota",
   home: "Casa",
@@ -27,6 +37,9 @@ type Draft = {
   compareAtPrice: string;
   images: string[];
   benefits: ProductBenefit[];
+  /** Frase breve de la card del home, debajo del precio; sin texto se usa la frase corta */
+  highlight: string;
+  highlightIcon: IconName;
   /** Etiqueta sobre la foto de la card del home; sin texto no se muestra */
   tagText: string;
   tagIcon: ProductContextTag["icon"];
@@ -45,6 +58,8 @@ function toDraft(p?: Product): Draft {
     compareAtPrice: p?.compareAtPrice ? String(p.compareAtPrice) : "",
     images: p?.images ?? [],
     benefits: p?.benefits ?? [],
+    highlight: p?.highlight ?? "",
+    highlightIcon: p?.highlightIcon ?? "check",
     tagText: p?.contextTag?.text ?? "",
     tagIcon: p?.contextTag?.icon ?? "leaf",
     faqs: p?.faqs ?? [],
@@ -141,6 +156,9 @@ export default function ProductEditor({ product }: { product?: Product }) {
   const off = discountPercent(price, Number(draft.compareAtPrice) || undefined);
   const { tagText, tagIcon, ...fields } = draft;
   const tag = tagText.trim();
+  const highlight = draft.highlight.trim();
+  // La card muestra la frase breve con ícono o, sin ella, la frase corta sin ícono
+  const cardLine = highlight || draft.tagline.trim();
   const payload = JSON.stringify({
     ...fields,
     price: draft.price,
@@ -315,69 +333,88 @@ export default function ProductEditor({ product }: { product?: Product }) {
         </label>
       </Section>
 
-      {/* Etiqueta de la tarjeta del inicio */}
-      <Section
-        title="Etiqueta sobre la foto"
-        hint="Opcional. Se ve en la tarjeta del inicio, abajo a la izquierda de la foto. Dejala vacía para no mostrarla."
-      >
+      {/* Tarjeta del inicio */}
+      <Section title="Tarjeta del inicio" hint="Cómo se ve el producto en la página principal.">
         <label className="block">
-          <span className="font-bold">Texto</span>
+          <span className="font-bold">Frase debajo del precio</span>
+          <input
+            className={input}
+            value={draft.highlight}
+            maxLength={40}
+            onChange={(e) => set("highlight", e.target.value)}
+            placeholder="Liviana, compacta y súper práctica."
+            aria-describedby="highlight-help"
+          />
+          <span id="highlight-help" className="mt-1 block text-sm text-ink/60">
+            {highlight.length} de 40 caracteres. Si la dejás vacía, se usa la frase corta.
+          </span>
+        </label>
+        <IconPicker
+          legend="Ícono de la frase"
+          name="highlight-icon"
+          icons={HIGHLIGHT_ICONS}
+          value={draft.highlightIcon}
+          onChange={(icon) => set("highlightIcon", icon)}
+        />
+        {err("highlight")}
+
+        <label className="block border-t border-ink/10 pt-4">
+          <span className="font-bold">
+            Etiqueta sobre la foto <span className="font-normal text-ink/50">(opcional)</span>
+          </span>
           <input
             className={input}
             value={draft.tagText}
             maxLength={20}
             onChange={(e) => set("tagText", e.target.value)}
             placeholder="Ideal para jardín"
-            aria-describedby="tag-count"
+            aria-describedby="tag-help"
           />
-          <span id="tag-count" className="mt-1 block text-sm text-ink/60">
-            {tag.length} de 20 caracteres
+          <span id="tag-help" className="mt-1 block text-sm text-ink/60">
+            {tag.length} de 20 caracteres. Va abajo a la izquierda de la foto; vacía, no se muestra.
           </span>
         </label>
+        <IconPicker
+          legend="Ícono de la etiqueta"
+          name="tag-icon"
+          icons={CONTEXT_TAG_ICONS}
+          value={draft.tagIcon}
+          onChange={(icon) => set("tagIcon", icon)}
+        />
+        {err("contextTag")}
 
-        <fieldset>
-          <legend className="font-bold">Ícono</legend>
-          <div className="mt-1 flex flex-wrap gap-2">
-            {CONTEXT_TAG_ICONS.map((icon) => (
-              <label
-                key={icon}
-                className="flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-ink/15 px-3 text-sm font-semibold has-checked:border-aqua-dark has-checked:bg-aqua/15 has-focus-visible:ring-2 has-focus-visible:ring-aqua/40"
-              >
-                <input
-                  type="radio"
-                  name="tag-icon"
-                  value={icon}
-                  checked={draft.tagIcon === icon}
-                  onChange={() => set("tagIcon", icon)}
-                  className="sr-only"
-                />
-                <HighlightIcon name={icon} className="size-5 text-aqua-dark" />
-                {TAG_ICON_LABEL[icon]}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-
-        {tag && (
-          <div>
-            <p className="text-sm text-ink/70">Se ve así:</p>
-            {/* Igual que en la tarjeta del inicio, sobre la foto principal */}
-            <div className="relative mt-1 aspect-[4/3] w-56 max-w-full overflow-hidden rounded-[18px] bg-foto">
+        <div>
+          <p className="text-sm text-ink/70">Se ve así:</p>
+          {/* Como la tarjeta del inicio en compu */}
+          {/* Mismo ancho que la tarjeta en la grilla de 3 columnas */}
+          <div className="mt-1 w-78 max-w-full rounded-[20px] bg-white p-2.5 pb-3 shadow-[0_8px_24px_rgb(11_42_42/0.06)] ring-1 ring-ink/6">
+            <div className="relative aspect-[3/2] overflow-hidden rounded-xl bg-foto">
               {draft.images[0] && (
-                <Image src={draft.images[0]} alt="" fill sizes="224px" className="object-cover" placeholder={SHIMMER} />
+                <Image src={draft.images[0]} alt="" fill sizes="292px" className="object-cover" placeholder={SHIMMER} />
               )}
-              <span className="absolute bottom-2.5 left-2.5 flex max-w-[calc(100%-1.25rem)] items-center gap-1.5 rounded-full bg-white/92 px-3 py-1.5 text-sm font-semibold text-ink">
-                <HighlightIcon name={tagIcon} className="size-4 shrink-0 text-aqua-dark" />
-                <span className="truncate">{tag}</span>
-              </span>
+              {tag && (
+                <span className="absolute bottom-2 left-2 flex max-w-[calc(100%-1rem)] items-center gap-1 rounded-full bg-white/92 px-2.5 py-1 text-xs font-semibold text-ink">
+                  <HighlightIcon name={tagIcon} solid className="size-3.5 shrink-0 text-aqua-dark" />
+                  <span className="truncate">{tag}</span>
+                </span>
+              )}
+            </div>
+            <div className="px-2">
+              <p className="mt-3 line-clamp-2 font-bold leading-tight">{draft.name.trim() || "Nombre del producto"}</p>
+              {price > 0 && <p className="mt-1 text-xl font-extrabold tabular-nums">{formatPrice(price)}</p>}
+              {cardLine && (
+                <p className="mt-1 flex items-center gap-1.5 text-sm text-ink/80">
+                  {highlight && <HighlightIcon name={draft.highlightIcon} solid className="size-4 shrink-0 text-aqua" />}
+                  <span className="truncate">{cardLine}</span>
+                </p>
+              )}
             </div>
           </div>
-        )}
-        {err("contextTag")}
+        </div>
       </Section>
 
       {/* Beneficios */}
-      <Section title="Beneficios" hint="Un emoji y una frase corta. Los 3 primeros se ven en la tarjeta del inicio.">
+      <Section title="Beneficios" hint="Un emoji y una frase corta. Se ven en la página del producto.">
         {draft.benefits.map((b, i) => (
           <div key={i} className="flex items-start gap-2">
             <input
@@ -508,6 +545,40 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
       </div>
       {children}
     </section>
+  );
+}
+
+/** Íconos para elegir uno, con su nombre al lado */
+function IconPicker<T extends IconName>(props: {
+  legend: string;
+  name: string;
+  icons: readonly T[];
+  value: T;
+  onChange: (icon: T) => void;
+}) {
+  return (
+    <fieldset>
+      <legend className="font-bold">{props.legend}</legend>
+      <div className="mt-1 flex flex-wrap gap-2">
+        {props.icons.map((icon) => (
+          <label
+            key={icon}
+            className="flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-ink/15 px-3 text-sm font-semibold has-checked:border-aqua-dark has-checked:bg-aqua/15 has-focus-visible:ring-2 has-focus-visible:ring-aqua/40"
+          >
+            <input
+              type="radio"
+              name={props.name}
+              value={icon}
+              checked={props.value === icon}
+              onChange={() => props.onChange(icon)}
+              className="sr-only"
+            />
+            <HighlightIcon name={icon} className="size-5 text-aqua-dark" />
+            {ICON_LABEL[icon]}
+          </label>
+        ))}
+      </div>
+    </fieldset>
   );
 }
 

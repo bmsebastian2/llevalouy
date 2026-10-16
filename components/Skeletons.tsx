@@ -50,27 +50,20 @@ function TrustSkeleton({ className = "" }: { className?: string }) {
   );
 }
 
-/** Celular: foto a la izquierda, características y botón abajo. Desde 640px: vertical, foto arriba (como ProductCard) */
+/** Celular: foto a la izquierda y botón abajo. Desde 640px: vertical, foto arriba (como ProductCard) */
 export function ProductCardSkeleton() {
   return (
     <li>
-      <div className="grid h-full grid-cols-[min(40%,11rem)_1fr] gap-x-3 gap-y-4 rounded-3xl border border-ink/6 bg-white p-4 shadow-[0_8px_24px_rgb(11_42_42/0.06)] sm:flex sm:flex-col sm:gap-5">
-        <Bone className="aspect-square w-full rounded-[18px] sm:aspect-[4/3]" />
-        <div className="flex flex-col justify-center sm:justify-start">
-          <Bone className="h-5 w-11/12 sm:h-7" />
-          <Bone className="mt-2 h-6 w-28 sm:h-10 sm:w-40" />
-          <Bone className="mt-2 h-3.5 w-full sm:h-4" />
-          <Bone className="mt-1.5 h-3.5 w-2/3 sm:h-4" />
+      <div className="grid h-full grid-cols-[min(40%,11rem)_1fr] gap-x-3 gap-y-3 rounded-[20px] border border-ink/6 bg-white p-2.5 shadow-[0_8px_24px_rgb(11_42_42/0.06)] sm:flex sm:flex-col sm:gap-4">
+        <Bone className="aspect-square w-full rounded-xl sm:aspect-[3/2]" />
+        <div className="flex flex-col justify-center py-1 pr-1 sm:justify-start sm:px-2 sm:py-0">
+          <Bone className="h-5 w-11/12 sm:h-6 sm:w-4/5" />
+          <Bone className="mt-2 h-6 w-28 sm:h-8 sm:w-36" />
+          <Bone className="mt-2 h-3.5 w-full sm:h-4 sm:w-4/5" />
+          {/* En celular la frase breve ocupa hasta dos líneas */}
+          <Bone className="mt-1.5 h-3.5 w-1/2 sm:hidden" />
         </div>
-        <div className="col-span-2 grid gap-2.5">
-          {Array.from({ length: 3 }, (_, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <Bone className="size-9 shrink-0 rounded-full" />
-              <Bone className="h-4 w-3/5" />
-            </div>
-          ))}
-        </div>
-        <Bone className="col-span-2 h-13 rounded-[14px] sm:mt-auto" />
+        <Bone className="col-span-2 mx-0.5 mb-0.5 h-12 rounded-xl sm:mx-1 sm:mb-1 sm:mt-auto" />
       </div>
     </li>
   );
