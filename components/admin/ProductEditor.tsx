@@ -6,7 +6,17 @@ import { getImageUploadUrl, saveProduct, type SaveProductState } from "@/app/adm
 import { slugify, type ProductErrors } from "@/lib/admin/product-validation";
 import { discountPercent, formatPrice } from "@/lib/format";
 import { SHIMMER } from "@/lib/shimmer";
-import type { Product, ProductBenefit, ProductFaq, ProductReview } from "@/types/product";
+import { CONTEXT_TAG_ICONS, type Product, type ProductBenefit, type ProductContextTag, type ProductFaq, type ProductReview } from "@/types/product";
+import HighlightIcon from "@/components/HighlightIcon";
+
+const TAG_ICON_LABEL: Record<ProductContextTag["icon"], string> = {
+  leaf: "Hoja",
+  drop: "Gota",
+  home: "Casa",
+  sun: "Sol",
+  bolt: "Rayo",
+  shield: "Escudo",
+};
 
 type Draft = {
   name: string;
@@ -17,6 +27,9 @@ type Draft = {
   compareAtPrice: string;
   images: string[];
   benefits: ProductBenefit[];
+  /** Etiqueta sobre la foto de la card del home; sin texto no se muestra */
+  tagText: string;
+  tagIcon: ProductContextTag["icon"];
   faqs: ProductFaq[];
   reviews: ProductReview[];
   active: boolean;
@@ -32,6 +45,8 @@ function toDraft(p?: Product): Draft {
     compareAtPrice: p?.compareAtPrice ? String(p.compareAtPrice) : "",
     images: p?.images ?? [],
     benefits: p?.benefits ?? [],
+    tagText: p?.contextTag?.text ?? "",
+    tagIcon: p?.contextTag?.icon ?? "leaf",
     faqs: p?.faqs ?? [],
     reviews: p?.reviews ?? [],
     active: p?.active ?? true,
@@ -124,10 +139,13 @@ export default function ProductEditor({ product }: { product?: Product }) {
 
   const price = Number(draft.price) || 0;
   const off = discountPercent(price, Number(draft.compareAtPrice) || undefined);
+  const { tagText, tagIcon, ...fields } = draft;
+  const tag = tagText.trim();
   const payload = JSON.stringify({
-    ...draft,
+    ...fields,
     price: draft.price,
     compareAtPrice: draft.compareAtPrice || null,
+    contextTag: tag ? { text: tag, icon: tagIcon } : null,
   });
 
   const err = (k: keyof ProductErrors) =>
@@ -297,8 +315,69 @@ export default function ProductEditor({ product }: { product?: Product }) {
         </label>
       </Section>
 
+      {/* Etiqueta de la tarjeta del inicio */}
+      <Section
+        title="Etiqueta sobre la foto"
+        hint="Opcional. Se ve en la tarjeta del inicio, abajo a la izquierda de la foto. Dejala vacía para no mostrarla."
+      >
+        <label className="block">
+          <span className="font-bold">Texto</span>
+          <input
+            className={input}
+            value={draft.tagText}
+            maxLength={20}
+            onChange={(e) => set("tagText", e.target.value)}
+            placeholder="Ideal para jardín"
+            aria-describedby="tag-count"
+          />
+          <span id="tag-count" className="mt-1 block text-sm text-ink/60">
+            {tag.length} de 20 caracteres
+          </span>
+        </label>
+
+        <fieldset>
+          <legend className="font-bold">Ícono</legend>
+          <div className="mt-1 flex flex-wrap gap-2">
+            {CONTEXT_TAG_ICONS.map((icon) => (
+              <label
+                key={icon}
+                className="flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-ink/15 px-3 text-sm font-semibold has-checked:border-aqua-dark has-checked:bg-aqua/15 has-focus-visible:ring-2 has-focus-visible:ring-aqua/40"
+              >
+                <input
+                  type="radio"
+                  name="tag-icon"
+                  value={icon}
+                  checked={draft.tagIcon === icon}
+                  onChange={() => set("tagIcon", icon)}
+                  className="sr-only"
+                />
+                <HighlightIcon name={icon} className="size-5 text-aqua-dark" />
+                {TAG_ICON_LABEL[icon]}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        {tag && (
+          <div>
+            <p className="text-sm text-ink/70">Se ve así:</p>
+            {/* Igual que en la tarjeta del inicio, sobre la foto principal */}
+            <div className="relative mt-1 aspect-[4/3] w-56 max-w-full overflow-hidden rounded-[18px] bg-foto">
+              {draft.images[0] && (
+                <Image src={draft.images[0]} alt="" fill sizes="224px" className="object-cover" placeholder={SHIMMER} />
+              )}
+              <span className="absolute bottom-2.5 left-2.5 flex max-w-[calc(100%-1.25rem)] items-center gap-1.5 rounded-full bg-white/92 px-3 py-1.5 text-sm font-semibold text-ink">
+                <HighlightIcon name={tagIcon} className="size-4 shrink-0 text-aqua-dark" />
+                <span className="truncate">{tag}</span>
+              </span>
+            </div>
+          </div>
+        )}
+        {err("contextTag")}
+      </Section>
+
       {/* Beneficios */}
-      <Section title="Beneficios" hint="Un emoji y una frase corta.">
+      <Section title="Beneficios" hint="Un emoji y una frase corta. Los 3 primeros se ven en la tarjeta del inicio.">
         {draft.benefits.map((b, i) => (
           <div key={i} className="flex items-start gap-2">
             <input

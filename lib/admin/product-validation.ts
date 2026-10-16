@@ -1,4 +1,4 @@
-import type { Product } from "@/types/product";
+import { CONTEXT_TAG_ICONS, type Product } from "@/types/product";
 
 // Validación del editor de productos. La usa el servidor antes de guardar; el cliente la reutiliza para avisar antes.
 
@@ -59,6 +59,14 @@ export function validateProduct(raw: unknown): { ok: true; data: ProductInput } 
   if (benefits.length > 12) errors.benefits = "Máximo 12 beneficios.";
   if (benefits.some((b) => b.text.length > 140)) errors.benefits = "Cada beneficio: máximo 140 caracteres.";
 
+  // Etiqueta sobre la foto de la card del home. Sin texto, no hay etiqueta.
+  const tag = obj(r.contextTag);
+  const tagText = str(tag.text);
+  const tagIcon = CONTEXT_TAG_ICONS.find((i) => i === tag.icon);
+  if (tagText.length > 20) errors.contextTag = "La etiqueta tiene que tener hasta 20 caracteres.";
+  else if (tagText && !tagIcon) errors.contextTag = "Elegí un ícono para la etiqueta.";
+  const contextTag = tagText && tagIcon ? { text: tagText, icon: tagIcon } : undefined;
+
   const faqs = arr(r.faqs)
     .map((f) => ({ q: str(obj(f).q), a: str(obj(f).a) }))
     .filter((f) => f.q || f.a);
@@ -78,6 +86,6 @@ export function validateProduct(raw: unknown): { ok: true; data: ProductInput } 
 
   return {
     ok: true,
-    data: { slug, name, tagline, description, price, compareAtPrice, images, benefits, faqs, reviews, active },
+    data: { slug, name, tagline, description, price, compareAtPrice, images, benefits, contextTag, faqs, reviews, active },
   };
 }

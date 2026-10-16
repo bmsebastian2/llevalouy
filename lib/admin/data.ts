@@ -131,19 +131,33 @@ export async function saveProduct(id: string | null, input: ProductInput): Promi
     compare_at_price: input.compareAtPrice ?? null,
     images: input.images,
     benefits: input.benefits,
+    context_tag: input.contextTag ?? null,
     faqs: input.faqs,
     reviews: input.reviews,
     active: input.active,
   };
 
-  const q = id
-    ? db().from("products").update(row).eq("id", id).select("id").single<{ id: string }>()
-    : db().from("products").insert(row).select("id").single<{ id: string }>();
-  const { data, error } = await q;
+  const run = (values: Partial<typeof row>) =>
+    id
+      ? db().from("products").update(values).eq("id", id).select("id").single<{ id: string }>()
+      : db().from("products").insert(values).select("id").single<{ id: string }>();
+  let { data, error } = await run(row);
 
-  if (error) {
-    const slugTaken = error.code === "23505";
-    return { ok: false, slugTaken, message: slugTaken ? "Ya hay otro producto con esa dirección." : error.message };
+  // context_tag se agrega a mano (supabase/schema.sql). Mientras la columna no exista, se guarda todo lo demás.
+  const missingTagColumn =
+    (error?.code === "PGRST204" || error?.code === "42703") && error.message.includes("context_tag");
+  if (missingTagColumn) {
+    if (input.contextTag) {
+      return { ok: false, slugTaken: false, message: "Para guardar la etiqueta falta correr la migración de context_tag en Supabase." };
+    }
+    const { context_tag: _omit, ...withoutTag } = row;
+    ({ data, error } = await run(withoutTag));
+  }
+
+  if (error || !data) {
+    const slugTaken = error?.code === "23505";
+    const message = slugTaken ? "Ya hay otro producto con esa dirección." : (error?.message ?? "No se pudo guardar el producto.");
+    return { ok: false, slugTaken, message };
   }
   return { ok: true, id: data.id };
 }
