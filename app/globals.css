@@ -85,7 +85,7 @@ dialog::backdrop {
 }
 
 /*
-  El único momento con movimiento: la hoja de barrios sube desde abajo (en compu aparece en el centro).
+  El único momento con movimiento: las hojas (barrios, compartir) suben desde abajo (en compu aparecen en el centro).
 */
 @keyframes sheet-up {
   from {

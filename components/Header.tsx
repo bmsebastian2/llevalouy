@@ -1,9 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
+import { SITE_SHARE_TEXT } from "@/lib/share";
 import { site } from "@/lib/site";
 import { getStoreWhatsapp, whatsappUrl } from "@/lib/whatsapp";
 import CartButton from "./CartButton";
-import { WhatsappIcon } from "./DeliveryIcons";
+import { InstagramIcon, WhatsappIcon } from "./DeliveryIcons";
+import ShareButton from "./ShareButton";
 
 /** `cta`: solo en la página de producto, donde existe el formulario de pedido. */
 export default function Header({ cta = false }: { cta?: boolean }) {
@@ -19,7 +21,8 @@ export default function Header({ cta = false }: { cta?: boolean }) {
         >
           <Image src="/brand/logo-horizontal.svg" alt="Llevalo UY" width={124} height={32} loading="eager" />
         </Link>
-        <div className="flex items-center gap-1.5">
+        {/* Íconos de 44px a 4px: a 360px entran logo, carrito, compartir, Instagram y WhatsApp */}
+        <div className="flex items-center gap-1">
           {/* En celular ya está la barra fija de abajo */}
           {cta && (
             <a
@@ -31,17 +34,33 @@ export default function Header({ cta = false }: { cta?: boolean }) {
           )}
           {/* Solo aparece si ya hay algo en el carrito */}
           <CartButton hideEmpty />
+          <ShareButton
+            variant="header"
+            title={site.name}
+            text={SITE_SHARE_TEXT}
+            path="/"
+            label="Compartir Llevalo UY"
+          />
+          <a
+            href={`https://instagram.com/${site.instagram}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram de Llevalo UY"
+            className="grid size-11 place-items-center rounded-xl text-aqua-dark outline-none transition-colors hover:bg-ink/5 focus-visible:ring-4 focus-visible:ring-aqua-dark/40"
+          >
+            <InstagramIcon className="size-[1.375rem]" />
+          </a>
           {whatsapp && (
             <a
               href={whatsappUrl(whatsapp, "¡Hola! Tengo una consulta.")}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Consultas por WhatsApp"
-              className="inline-flex h-12 min-w-12 items-center justify-center gap-2 rounded-xl px-3 font-bold text-ink outline-none ring-1 ring-espuma transition-colors hover:bg-bg focus-visible:ring-4 focus-visible:ring-aqua-dark/40"
+              className="inline-flex h-11 min-w-11 items-center justify-center gap-2 rounded-xl px-3 font-bold text-ink outline-none ring-1 ring-espuma transition-colors hover:bg-bg focus-visible:ring-4 focus-visible:ring-aqua-dark/40"
             >
               <WhatsappIcon className="size-5 text-aqua-dark" />
-              {/* Menos de 400px: solo el ícono */}
-              <span className="hidden min-[400px]:inline">Consultas</span>
+              {/* Menos de 480px: solo el ícono (con el carrito lleno no entra el texto) */}
+              <span className="hidden min-[480px]:inline">Consultas</span>
             </a>
           )}
         </div>

@@ -1,6 +1,9 @@
 export const site = {
   name: "Llevalo UY",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  // Base de og:image y og:url. Sin la variable, en producción nunca localhost: WhatsApp no podría leer la imagen.
+  url:
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.NODE_ENV === "production" ? "https://llevalouy.vercel.app" : "http://localhost:3000"),
   instagram: "llevalouy",
   email: "tiendallevalouy@gmail.com",
   // TODO: Sebastián confirma el horario de atención

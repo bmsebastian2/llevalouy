@@ -2,10 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/types/product";
 import { discountPercent, formatPrice } from "@/lib/format";
+import { productShareText } from "@/lib/share";
 import { SHIMMER } from "@/lib/shimmer";
 import AddToCartButton from "./AddToCartButton";
 import HighlightIcon from "./HighlightIcon";
 import NoPhoto from "./NoPhoto";
+import ShareButton from "./ShareButton";
 
 type Props = {
   product: Product;
@@ -71,15 +73,27 @@ export default function ProductCard({ product: p, preload = false }: Props) {
             <span className="truncate">{p.contextTag.text}</span>
           </span>
         )}
-        <h2 id={`nombre-${p.slug}`} className="text-base font-bold leading-tight text-ink sm:text-[1.1875rem]">
-          <Link
-            href={`/p/${p.slug}`}
-            // after: área táctil de 48px o más aunque el nombre ocupe una línea. -mx-1 px-1: aire para el anillo de foco
-            className="relative -mx-1 block rounded-lg px-1 outline-none after:absolute after:inset-x-0 after:-inset-y-3.5 focus-visible:ring-2 focus-visible:ring-aqua-dark focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-          >
-            <span className="line-clamp-2">{p.name}</span>
-          </Link>
-        </h2>
+        {/* Compartir va al lado del nombre: junto a "Agregar" no entra a 360px, y sobre la foto la taparía */}
+        <div className="flex items-start gap-1">
+          <h2 id={`nombre-${p.slug}`} className="min-w-0 flex-1 text-base font-bold leading-tight text-ink sm:text-[1.1875rem]">
+            <Link
+              href={`/p/${p.slug}`}
+              // after: área táctil de 48px o más aunque el nombre ocupe una línea. -mx-1 px-1: aire para el anillo de foco
+              className="relative -mx-1 block rounded-lg px-1 outline-none after:absolute after:inset-x-0 after:-inset-y-3.5 focus-visible:ring-2 focus-visible:ring-aqua-dark focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            >
+              <span className="line-clamp-2">{p.name}</span>
+            </Link>
+          </h2>
+          {/* Márgenes negativos: el ícono queda alineado con la primera línea y el borde sin empujar el precio; el área táctil sigue siendo de 44px */}
+          <ShareButton
+            variant="card"
+            title={p.name}
+            text={productShareText(p)}
+            path={`/p/${p.slug}`}
+            label={`Compartir ${p.name}`}
+            className="-my-3 -mr-3 shrink-0"
+          />
+        </div>
 
         <p className="mt-1 flex flex-wrap items-baseline gap-x-2 sm:mt-1.5">
           <span className="whitespace-nowrap text-2xl font-extrabold leading-tight tabular-nums tracking-tight text-ink sm:text-[1.625rem]">

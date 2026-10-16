@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { SHIMMER } from "@/lib/shimmer";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 import NoPhoto from "./NoPhoto";
@@ -9,14 +9,22 @@ import NoPhoto from "./NoPhoto";
 type Props = {
   images: string[];
   alt: string;
+  /** Va arriba a la derecha de la foto activa (el botón de compartir) */
+  action?: ReactNode;
 };
 
-export default function ProductGallery({ images, alt }: Props) {
+export default function ProductGallery({ images, alt, action }: Props) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
   const reducedMotion = useReducedMotion();
   const total = images.length;
   const isLast = active === total - 1;
+
+  // Borde derecho de la slide activa. La última queda pegada al borde derecho del carrusel; con una sola foto, a la izquierda.
+  const rightEdge: CSSProperties =
+    total > 1 && isLast
+      ? { right: "calc(var(--pad) + 0.75rem)" }
+      : { left: "calc(var(--pad) + var(--slide-w) - 0.75rem)", transform: "translateX(-100%)" };
 
   // La slide activa es la que tiene mayor parte visible dentro del carrusel.
   useEffect(() => {
@@ -94,17 +102,19 @@ export default function ProductGallery({ images, alt }: Props) {
           ))}
         </div>
 
+        {action && (
+          <div className="absolute top-3" style={rightEdge}>
+            {action}
+          </div>
+        )}
+
         {total > 1 && (
           <>
-            {/* Contador anclado a la esquina de la slide activa (la última queda pegada al borde derecho). */}
+            {/* Contador anclado abajo a la derecha de la slide activa: arriba va compartir */}
             <span
               aria-hidden
-              className="pointer-events-none absolute top-3 rounded-full bg-ink/65 px-2.5 py-1 text-xs font-bold tabular-nums tracking-wide text-white backdrop-blur-sm"
-              style={
-                isLast
-                  ? { right: "calc(var(--pad) + 0.75rem)" }
-                  : { left: "calc(var(--pad) + var(--slide-w) - 0.75rem)", transform: "translateX(-100%)" }
-              }
+              className="pointer-events-none absolute bottom-3 rounded-full bg-ink/65 px-2.5 py-1 text-xs font-bold tabular-nums tracking-wide text-white backdrop-blur-sm"
+              style={rightEdge}
             >
               {active + 1}/{total}
             </span>

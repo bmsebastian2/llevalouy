@@ -12,6 +12,7 @@ import OrderForm, { type OrderProduct } from "@/components/OrderForm";
 import Footer from "@/components/Footer";
 import { getActiveProducts, getProductBySlug } from "@/lib/products";
 import { formatPrice } from "@/lib/format";
+import { site } from "@/lib/site";
 import type { Product } from "@/types/product";
 
 // Los cambios de producto en Supabase se reflejan en hasta 60 s.
@@ -30,23 +31,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!product) return { title: "Producto no encontrado" };
 
   const description = `${product.tagline} ${formatPrice(product.price)}. Pagás al recibir.`;
-  const image = product.images[0];
 
+  // La imagen la pone ./opengraph-image.ts (JPG 1200×630). Sin twitter:image, X usa og:image.
   return {
     title: product.name,
     description,
     alternates: { canonical: `/p/${product.slug}` },
+    // Next reemplaza el openGraph del layout entero: siteName, locale y type se repiten acá
     openGraph: {
+      siteName: site.name,
+      locale: "es_UY",
+      type: "website",
       title: product.name,
       description,
       url: `/p/${product.slug}`,
-      images: image ? [{ url: image, width: 1200, height: 1200, alt: product.name }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
       title: product.name,
       description,
-      images: image ? [image] : undefined,
     },
   };
 }

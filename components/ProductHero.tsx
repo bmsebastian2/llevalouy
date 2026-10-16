@@ -1,8 +1,10 @@
 import type { Product } from "@/types/product";
 import { discountPercent, formatPrice } from "@/lib/format";
+import { productShareText } from "@/lib/share";
 import ProductGallery from "./ProductGallery";
 import CtaButton from "./CtaButton";
 import DeliveryPromise from "./DeliveryPromise";
+import ShareButton from "./ShareButton";
 
 export default function ProductHero({ product }: { product: Product }) {
   const off = discountPercent(product.price, product.compareAtPrice);
@@ -11,7 +13,18 @@ export default function ProductHero({ product }: { product: Product }) {
     // Celular: todo lo que hace falta para decidir entra en la primera pantalla (390×844)
     // Celular: la galería va de borde a borde (su propio --pad); desde md, todo dentro del contenedor de página
     <section className="mx-auto max-w-5xl pt-3 md:page-container md:grid md:grid-cols-2 md:gap-10 md:py-10">
-      <ProductGallery images={product.images} alt={product.name} />
+      <ProductGallery
+        images={product.images}
+        alt={product.name}
+        action={
+          <ShareButton
+            title={product.name}
+            text={productShareText(product)}
+            path={`/p/${product.slug}`}
+            label={`Compartir ${product.name}`}
+          />
+        }
+      />
 
       <div className="px-4 pt-4 sm:px-6 md:px-0 md:pt-2">
         <h1 className="display line-clamp-2 text-[1.75rem] font-extrabold leading-[1.1] tracking-tight sm:text-5xl">

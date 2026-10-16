@@ -40,7 +40,7 @@ export default function CartButton({ className = "", hideEmpty = false }: { clas
     <Link
       href="/carrito"
       aria-label={count > 0 ? `Carrito, ${count} ${count === 1 ? "producto" : "productos"}` : "Carrito"}
-      className={`relative flex size-12 items-center justify-center rounded-xl text-ink outline-none transition hover:bg-ink/5 focus-visible:ring-2 focus-visible:ring-aqua-dark ${className}`}
+      className={`relative flex size-11 items-center justify-center rounded-xl text-ink outline-none transition hover:bg-ink/5 focus-visible:ring-2 focus-visible:ring-aqua-dark ${className}`}
     >
       <CartIcon className="size-6" />
       {count > 0 && (

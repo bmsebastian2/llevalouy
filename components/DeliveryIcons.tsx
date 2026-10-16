@@ -31,6 +31,17 @@ export function CashIcon({ className = "" }: { className?: string }) {
   );
 }
 
+/** Cámara de Instagram: la usa el Header */
+export function InstagramIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg {...iconProps} className={className}>
+      <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.25" cy="6.75" r="0.6" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 /** Globo de WhatsApp: lo usan el Header y el hero */
 export function WhatsappIcon({ className = "" }: { className?: string }) {
   return (
