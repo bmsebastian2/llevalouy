@@ -48,14 +48,15 @@ export default function AddToCartButton({ slug, name, nameId }: Props) {
     flash("added", `${name} agregado al carrito, ${n} ${n === 1 ? "unidad" : "unidades"}.`);
   }
 
-  const label =
+  // [lo que se ve siempre, lo que se agrega desde 640px]: en celular el botón va al lado de la foto y entra solo el verbo
+  const [label, more] =
     feedback === "added"
-      ? "Agregado"
+      ? ["Agregado", ""]
       : feedback === "limit"
-        ? "Llegaste al máximo"
+        ? ["Máximo", " por pedido"]
         : quantity > 0
-          ? "Agregar otro"
-          : "Agregar al carrito";
+          ? ["Agregar otro", ""]
+          : ["Agregar", " al carrito"];
 
   return (
     <>
@@ -63,7 +64,8 @@ export default function AddToCartButton({ slug, name, nameId }: Props) {
         type="button"
         onClick={add}
         aria-describedby={nameId}
-        className={`flex h-12 w-full min-w-0 items-center justify-center gap-2 rounded-xl px-4 text-[0.9375rem] font-bold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-aqua-dark focus-visible:ring-offset-2 focus-visible:ring-offset-white motion-reduce:transition-none ${
+        // Celular: del ancho de su texto, como en la referencia. Desde 640px: todo el ancho de la card
+        className={`flex h-11 w-fit items-center justify-center gap-2 rounded-xl px-5 text-[0.9375rem] font-bold outline-none sm:h-12 sm:w-full sm:px-4 transition-colors focus-visible:ring-2 focus-visible:ring-aqua-dark focus-visible:ring-offset-2 focus-visible:ring-offset-white motion-reduce:transition-none ${
           feedback === "added"
             ? "bg-aqua text-ink"
             : "bg-aqua-dark text-white hover:bg-[color-mix(in_oklab,var(--aqua-dark),var(--ink)_30%)]"
@@ -76,7 +78,11 @@ export default function AddToCartButton({ slug, name, nameId }: Props) {
         ) : (
           <TrolleyIcon className="size-5" />
         )}
-        {label}
+        <span>
+          {label}
+          {/* En celular no se ve, pero el lector de pantalla lo dice igual */}
+          {more && <span className="sr-only sm:not-sr-only">{more}</span>}
+        </span>
       </button>
       <p className="sr-only" aria-live="polite">
         {announce}

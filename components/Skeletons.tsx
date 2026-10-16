@@ -50,20 +50,20 @@ function TrustSkeleton({ className = "" }: { className?: string }) {
   );
 }
 
-/** Celular: foto a la izquierda y botón abajo. Desde 640px: vertical, foto arriba (como ProductCard) */
+/** Celular: foto a la izquierda y todo lo demás al lado. Desde 640px: vertical, foto arriba (como ProductCard) */
 export function ProductCardSkeleton() {
   return (
     <li>
-      <div className="grid h-full grid-cols-[min(40%,11rem)_1fr] gap-x-3 gap-y-3 rounded-[20px] border border-ink/6 bg-white p-2.5 shadow-[0_8px_24px_rgb(11_42_42/0.06)] sm:flex sm:flex-col sm:gap-4">
+      <div className="grid h-full grid-cols-[min(40%,11rem)_1fr] gap-x-3.5 rounded-[20px] border border-ink/6 bg-white p-2 shadow-[0_8px_24px_rgb(11_42_42/0.06)] sm:flex sm:flex-col sm:gap-4 sm:p-2.5">
         <Bone className="aspect-square w-full rounded-xl sm:aspect-[3/2]" />
-        <div className="flex flex-col justify-center py-1 pr-1 sm:justify-start sm:px-2 sm:py-0">
-          <Bone className="h-5 w-11/12 sm:h-6 sm:w-4/5" />
-          <Bone className="mt-2 h-6 w-28 sm:h-8 sm:w-36" />
-          <Bone className="mt-2 h-3.5 w-full sm:h-4 sm:w-4/5" />
+        <div className="flex flex-col py-1.5 pr-1.5 sm:flex-1 sm:px-2 sm:pb-1 sm:pt-0">
+          <Bone className="h-4 w-11/12 sm:h-6 sm:w-4/5" />
+          <Bone className="mt-2 h-7 w-28 sm:h-8 sm:w-36" />
+          <Bone className="mt-2 h-3 w-full sm:h-4 sm:w-4/5" />
           {/* En celular la frase breve ocupa hasta dos líneas */}
-          <Bone className="mt-1.5 h-3.5 w-1/2 sm:hidden" />
+          <Bone className="mt-1.5 h-3 w-1/2 sm:hidden" />
+          <Bone className="mt-auto h-11 w-32 rounded-xl sm:-mx-1 sm:mt-4 sm:h-12 sm:w-auto" />
         </div>
-        <Bone className="col-span-2 mx-0.5 mb-0.5 h-12 rounded-xl sm:mx-1 sm:mb-1 sm:mt-auto" />
       </div>
     </li>
   );
